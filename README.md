@@ -1,12 +1,11 @@
 # hermes-orpheus
 
-Execution presets for Hermes native subagents and webhook-created sessions. This implementation uses the original reviewed `inventory → fields → compatible_settings → policies` interface.
+Execution presets for Hermes native subagents and webhook-created sessions. This implementation uses the original reviewed `inventory → fields → compatible_settings → policies` interface. Hermes core modifications are not required or shipped. Native presets select models and retain the host's existing effort behavior; webhook presets may select both models and effort through the public Run API.
 
 - [Requirements](docs/spec/subagent-presets.md)
 - [Design](docs/design.md)
 - [Implementation status and limits](docs/implementation.md)
 - [Design and implementation reviews](docs/reviews/README.md)
-- [Hermes compatibility extension](compat/README.md)
 
 ## Local development and configuration inspection
 
@@ -46,7 +45,7 @@ plugins:
 
 Equivalent fallback environment variables are `ORPHEUS_CONFIG`, `ORPHEUS_DEPLOYMENT`, and `ORPHEUS_STATE_DIR`. Reload the plugin or restart the host after configuration changes; no live file watcher is installed. State defaults to `$HERMES_HOME/orpheus` (or `~/.hermes/orpheus`). Loading the plugin never launches work. With no preset configuration it registers discovery tools with an empty registry.
 
-The [preset example](examples/presets.yaml) uses the original interface. The [deployment example](examples/deployment.yaml) intentionally denies execution until an operator verifies the exact provider/model/effort settings. Credentials are referenced through environment variable names; do not place tokens in preset definitions.
+The [preset example](examples/presets.yaml) uses the original interface. The [deployment example](examples/deployment.yaml) intentionally denies execution until an operator verifies the exact native provider/model settings. Credentials are referenced through environment variable names; do not place tokens in preset definitions.
 
 ## Subagents
 
@@ -55,12 +54,12 @@ The tools are `orpheus_presets`, `orpheus_spawn`, `orpheus_status`, and `orpheus
 For the included preset, the parent can request:
 
 ```json
-{"task":"Analyze this problem","preset_id":"analyst","proposals":{"effort":"high"}}
+{"task":"Analyze this problem","preset_id":"analyst","proposals":{"model":"large"}}
 ```
 
-The model is fixed by the preset, and `high` selects its `complex` tuple. Missing or ambiguous choices fail before launch. Tool access cannot exceed the verified deployment scope.
+The selected model reference `large` resolves to the preset's matching model tuple. Missing or ambiguous choices fail before launch. Tool access cannot exceed the verified deployment scope.
 
-**Pinned stock Hermes does not expose per-subagent effort.** Every explicit effort setting is rejected on that host. The separate [companion source patch](compat/README.md) adds per-launch effort and fallback controls for the pinned revision. It is not automatically applied or submitted upstream. Even on a patched host, exact deployment settings require verification; source/constructor tests do not establish real-provider behavior. Model-only presets without an effort field can use the stock lifecycle, subject to the same deployment gates.
+**Native subagent effort overrides are outside this release.** Omit `effort` from native preset fields and compatible tuples. The adapter rejects every explicit effort, including on hosts advertising an extension, and never sends `reasoning_effort` or per-launch `disable_fallback`. The host's existing reasoning configuration applies. Operators must verify provider fallback is disabled in the host configuration and authorize exact `{provider, model}` pairs. Per-child maximum turns and upstream patches are also outside scope. Presets declaring effort remain usable for compatible webhook routes.
 
 ## Webhooks
 
@@ -74,4 +73,4 @@ Jev uses `TYPESAFE_API_KEY` by default (override `jev_token_env` in deployment c
 
 Launch intent and selections are persisted before submission. Duplicate webhook bodies reuse the original record. Ambiguous submissions remain `unknown` and are not automatically resubmitted; restart or polling cannot create replacement runs. Native ownership is checked through the public lifecycle before status/cancel access, and internal capability tokens are not returned to callers.
 
-Tests cover actual Orpheus registry/resolver/plugin wiring, a local HTTP server representing the public Hermes run API, and the patched upstream constructor with dependencies stubbed. An installed live Hermes/provider integration, effective provider effort, and production deployment acceptance remain separate gates. No production gateway was changed.
+Tests cover actual Orpheus registry/resolver/plugin wiring, a local HTTP server representing the public Hermes run API, and stock-shaped native lifecycle requests. An installed live Hermes/provider integration, effective provider effort, and production deployment acceptance remain separate gates. No production gateway was changed.

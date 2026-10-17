@@ -1,6 +1,6 @@
 # hermes-orpheus design
 
-Status: proposed design, 2026-10-17. This document describes an implementation plan, not an installed plugin. The [requirements](spec/subagent-presets.md) define desired behavior; [subagent feasibility](feasibility.md), [webhook feasibility](webhook-feasibility.md), and the [probe limitations](evidence/webhook-model-routing/README.md) distinguish verified source facts from remaining runtime proof. Hermes baseline: `7e9eb8d9a30f4a9bb9f8ecaf816b4b0ffdf47357`.
+Status: design with user-selected core-unmodified release scope, 2026-10-17. This document describes an implementation plan, not an installed plugin. The [requirements](spec/subagent-presets.md) define desired behavior; [subagent feasibility](feasibility.md), [webhook feasibility](webhook-feasibility.md), and the [probe limitations](evidence/webhook-model-routing/README.md) distinguish verified source facts from remaining runtime proof. Hermes baseline: `7e9eb8d9a30f4a9bb9f8ecaf816b4b0ffdf47357`.
 
 ## Decisions and boundaries
 
@@ -8,7 +8,7 @@ Use one plugin-owned preset registry and resolver, with two execution adapters. 
 
 All names, configuration keys, internal records, and Orpheus tools below are proposed Orpheus interfaces. Only explicitly identified Hermes surfaces are existing interfaces. The first implementation should support fixed and finite-enum fields. The schema reserves constrained `free` mode for the subagent parent-proposal path; until its validators are implemented, discovery reports it unsupported. This is a proposed rollout choice, not a change to the confirmed dynamic model/effort requirement.
 
-A complete release still requires dynamic effort on both entrypoints. The reviewed native subagent launch request cannot set effort directly. Keep that adapter capability disabled until an upstream per-launch field or the public middleware alternative passes the gates below. Model-only experimentation must be labeled partial and must reject every preset declaring effort, including fixed and enum values. Omitting effort means native inheritance only, which does not satisfy the dynamic-effort requirement. The example `analyst` preset is therefore unavailable to subagents on the reviewed host until that gate passes.
+The current release uses stock public APIs only. Native presets select model/provider and retain existing host reasoning configuration; every explicit native effort is rejected, including on an extended host. Per-launch fallback control, maximum turns, upstream patches and experimental middleware effort binding are excluded. Operators must verify host fallback is disabled. Webhook presets retain model/provider/effort selection through the public Run API. Effort-bearing examples below describe the webhook path; `examples/presets.yaml` provides the current native model-only configuration.
 
 ## Components and ownership
 
@@ -28,7 +28,7 @@ The plugin registers discovery/spawn/status/cancel tools and an API-server platf
 
 ## Configuration model
 
-The following is illustrative valid YAML for the proposed schema, conditional on the referenced authentication profile and execution target being declared in administrator configuration elsewhere; it is not a standalone deployable configuration. The external `issue-source` auth profile must explicitly declare body-signature coverage, unsigned delivery headers and the raw-body replay index with indefinite tombstones when signed freshness is absent. Provider/model identifiers are operator inventory references, not a claim that an example provider is installed. `small` and `large` refer to concrete authorized provider/model pairs defined by the administrator. The registry must reject this configuration at deployment if those identifiers or effort combinations are unavailable.
+The following is a webhook-only illustration of the original schema; the native model-only example is [examples/presets.yaml](../examples/presets.yaml). It is conditional on the referenced authentication profile and execution target being declared in administrator configuration elsewhere; it is not a standalone deployable configuration. The external `issue-source` auth profile must explicitly declare body-signature coverage, unsigned delivery headers and the raw-body replay index with indefinite tombstones when signed freshness is absent. Provider/model identifiers are operator inventory references, not a claim that an example provider is installed. `small` and `large` refer to concrete authorized provider/model pairs defined by the administrator. The registry must reject this configuration at deployment if those identifiers or effort combinations are unavailable.
 
 ```yaml
 schema_version: 1
@@ -59,15 +59,7 @@ presets:
     compatible_settings:
       routine: {model: small, effort: low}
       complex: {model: large, effort: high}
-subagent_policy: interactive
 policies:
-  interactive:
-    entrypoint: subagent
-    input_schema:
-      task.text: {type: string, max_length: 16384, required: true, trust: payload}
-      context.complexity: {type: enum, values: [routine, complex], required: false, trust: payload}
-    preset_selector: {id: interactive-preset, kind: parent, on_error: []}
-    field_resolver: {id: interactive-fields, kind: parent, on_error: []}
   incoming:
     entrypoint: webhook
     preset_selector: {id: incoming-preset, kind: fixed, preset: analyst, on_error: []}
@@ -160,7 +152,7 @@ Proposed tools are `orpheus_presets`, `orpheus_spawn`, `orpheus_status`, and `or
 
 Map the final model/provider and permitted toolsets to the public lifecycle request. Compose role instructions and task context without claiming a new Hermes lifecycle role or removing inherited rules. The child retains Hermes's separate conversation, memory/tool restrictions and skill behavior. Do not copy parent transcript or memory wholesale. The adapter maintains native ownership: one parent cannot inspect or cancel another parent's run through a guessed ID.
 
-Reasoning effort is a hard gate on the pinned lifecycle API. A future upstream field is preferred. Public `subagent_start` plus `llm_request` middleware is an experimental alternative only: it must prove supported identity binding for identical simultaneous tasks, first-request ordering, provider-specific payload semantics, isolation, fallback handling and fail-closed behavior. Matching goal text is inadequate, and middleware's documented fail-open errors cannot be treated as enforcement. No private object mutation, global configuration swap or monkey patch is accepted.
+Reasoning effort is excluded from the native adapter in this release. The following alternatives are future research only, not implementation tasks: a future upstream field may support it. Public `subagent_start` plus `llm_request` middleware is an experimental alternative only: it must prove supported identity binding for identical simultaneous tasks, first-request ordering, provider-specific payload semantics, isolation, fallback handling and fail-closed behavior. Matching goal text is inadequate, and middleware's documented fail-open errors cannot be treated as enforcement. No private object mutation, global configuration swap or monkey patch is accepted.
 
 The plugin owns resolving and starting states; native lifecycle supplies subsequent status/result/wait/cancel behavior. Serialize cancellation against the launch decision. Acknowledged prelaunch cancellation prevents adapter invocation; after submission, cancellation remains pending until the native outcome is known. Completion may win. A timeout without confirmed rejection is `unknown`, not failure permitting automatic respawn. Restart recovery is exposed only where native public handles can actually be reconciled.
 
@@ -212,20 +204,20 @@ The endpoint returns a bounded acknowledgment with Orpheus request ID and curren
 | Registry and policy | Duplicate/invalid/empty registries; unknown keys; fixed override rejection; enum tuple mismatch; revision changes during selection; webhook cannot enter parent/free/fallback LLM paths; parent cannot choose policy or bypass bound rule/Jev fields; source refresh failure freezes admissions and invalid updated presets are quarantined. |
 | Deterministic rules | Priority uniqueness, missing/null/type cases, no-match/default, bounded predicates, identical inputs/snapshot yield identical outcomes; typed subagent rule/Jev context, unknown keys, trust spoofing, missing fields and cross-preset tuple references. |
 | Jev | Stubbed malformed/low-confidence/timeout/429/auth responses; finite candidates and projection audits; no secret/transcript disclosure; live account smoke test separately authorized for deployment. |
-| Native child | Concurrent identical tasks with different models/efforts; first provider request and parent defaults checked; ownership, cancellation races, partial failures and restart limitations. |
+| Native child | Concurrent identical tasks with different models; explicit effort rejected, stock request shape and parent defaults checked; ownership, cancellation races, partial failures and restart limitations. |
 | Webhook session | Real authenticated HTTP → plugin endpoint → public run API → fresh session → first provider request; cross-provider choice and effective effort; no selector LLM request. |
 | Enforcement | Invalid effort, unsupported tools, aliases, model fallback and unavailable credentials fail before execution; provider request traces demonstrate actual settings. |
 | Delivery durability | Same signed body with N unsigned header IDs starts at most one session; replay across freshness/retention/credential/target changes; parallel duplicates, different-body conflict, crash at every ledger boundary, lost acceptance, native idempotency replay/expiry/principal behavior, restart and cancellation ambiguity. |
 | Compatibility | Profile memory/skills and inherited rules preserved; existing native routes/receipt hooks unchanged; two simultaneous top-level sessions and children remain isolated. |
 
-The existing evidence bundle supplies source inspection and extracted/stub probes only. It does not satisfy these live gates. Keep test artifacts associated with adapter/host/provider versions and redact secrets. The subagent effort gate is the main unresolved architecture dependency; webhook first-request effort, fallback enforcement and durable replay remain deployment proof obligations.
+The existing evidence bundle supplies source inspection and extracted/stub probes only. It does not satisfy these live gates. Keep test artifacts associated with adapter/host/provider versions and redact secrets. Native effort is deferred by the current scope rather than a release dependency; webhook first-request effort, fallback enforcement and durable replay remain deployment proof obligations.
 
 ## Requirements traceability
 
 | Requirements | Design coverage |
 |---|---|
 | 1–4 | Shared registry, discovery and invalid-definition isolation. |
-| 5–17 | Entrypoint policy, fixed/enum/free gates, complete tuples and capability validation. |
+| 5–17 | Entrypoint policy, fixed/enum/free gates, complete tuples and capability validation. Current native scope omits effort; webhook effort remains supported. |
 | 18–20 | Context projection, immutable selection records and explicit errors/fallback. |
 | 21–24 | Parent tools, native child adapter, instructions and tool boundaries. |
 | 25–31 | Run state, native lifecycle, cancellation, ambiguity, concurrency and revision pinning. |
@@ -234,4 +226,4 @@ The existing evidence bundle supplies source inspection and extracted/stub probe
 | 41–45 | Durable delivery identity, new-session boundary, profile semantics and status reconciliation. |
 | 46 | Capability reporting and explicit distinction between proposed behavior and verified execution. |
 
-Open implementation decisions are the exact host registration signatures, deployable secret references, provider compatibility inventory, native idempotency retention contract, and the subagent effort adapter. They must be resolved by bounded integration experiments before claiming the complete requirement set is ready for production.
+Open implementation decisions are the exact host registration signatures, deployable secret references, provider compatibility inventory, native idempotency retention contract, and live provider compatibility. Native effort adapters are outside current scope. They must be resolved by bounded integration experiments before claiming the complete requirement set is ready for production.

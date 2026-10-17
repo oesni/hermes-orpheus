@@ -43,18 +43,19 @@ class PluginTests(unittest.IsolatedAsyncioTestCase):
         result=json.loads(await self.ctx.tools['orpheus_spawn']['handler']({'task':'test','preset_id':'absent'}))
         self.assertIn('error',result)
         self.assertEqual(self.ctx.subagent_lifecycle.calls,[])
-    async def test_original_example_loads_and_reports_effort_gate(self):
+    async def test_original_example_loads_and_reports_native_gates(self):
         self.ctx.config['config_path']=str(Path(__file__).parents[1]/'examples/presets.yaml')
         register(self.ctx)
         result=json.loads(await self.ctx.tools['orpheus_presets']['handler']({}))
-        self.assertIn('unsupported_effort',result['presets'][0]['capability_reasons'])
+        self.assertEqual(result['host_capabilities']['effort'],'unsupported')
+        self.assertIn('unverified_fallback',result['presets'][0]['capability_reasons'])
 
 class DeploymentValidationTests(unittest.TestCase):
     def test_strict_deployment_rejects_typoes_and_scope_substrings(self):
         from orpheus.deployment import validate_deployment
-        for config in ({'redact_literal':['secret']}, {'operators':{'TOKEN':'long-scope'}}, {'operators':{'TOKEN':[42]}}, {'subagent':{'verified_settings':'anything'}}, {'subagent':{'verified_settings':[{'provider':'p','model':42}]}}, {'subagent':{'redact_literals':['misplaced']}}):
+        for config in ({'redact_literal':['secret']}, {'operators':{'TOKEN':'long-scope'}}, {'operators':{'TOKEN':[42]}}, {'subagent':{'verified_settings':'anything'}}, {'subagent':{'verified_settings':[{'provider':'p','model':42}]}}, {'subagent':{'redact_literals':['misplaced']}}, {'subagent':{'verified_settings':[{'provider':'p','model':'m','effort':'high'}]}}):
             with self.subTest(config=config), self.assertRaises(ValueError): validate_deployment(config)
-        validate_deployment({'redact_literals':['secret'],'operators':{'TOKEN':['exact-scope']},'subagent':{'verified_settings':[{'provider':'p','model':'m','effort':'high'}]}})
+        validate_deployment({'redact_literals':['secret'],'operators':{'TOKEN':['exact-scope']},'subagent':{'verified_settings':[{'provider':'p','model':'m'}]}})
 
     def test_plugin_passes_global_redaction_to_native_adapter(self):
         from unittest.mock import patch

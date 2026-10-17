@@ -3,18 +3,19 @@ inventory:
   models:
     small:
       provider: configured-provider
-      model: configured-model
-      efforts: [low, high]
+      model: configured-small-model
+    large:
+      provider: configured-provider
+      model: configured-large-model
 presets:
   - id: analyst
     purpose: Analyze a task and explain the evidence.
     fields:
-      model: {mode: fixed, value: small}
-      effort: {mode: enum, candidates: [low, high]}
+      model: {mode: enum, candidates: [small, large]}
       instructions: {mode: fixed, value: Explain conclusions and identify uncertainty.}
     compatible_settings:
-      routine: {model: small, effort: low}
-      complex: {model: small, effort: high}
+      routine: {model: small}
+      complex: {model: large}
 subagent_policy: interactive
 policies:
   interactive:

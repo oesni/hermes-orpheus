@@ -1,5 +1,7 @@
 # Operator-controlled settings, separate from task/preset data. No secrets here.
 # Empty verified settings intentionally prevents launch until deployment tests pass.
+# Native verified_settings entries contain only provider/model, never effort.
+# Omitted native effort inherits the host setting; it is not dynamically overridden.
 subagent:
   fallback_disabled: false
   verified_settings: []

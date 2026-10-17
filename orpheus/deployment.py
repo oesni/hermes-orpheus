@@ -30,7 +30,7 @@ def validate_subagent(value):
     if not isinstance(settings, list):
         raise DeploymentError('invalid_verified_settings')
     for entry in settings:
-        _mapping(entry, {'provider', 'model', 'effort'})
+        _mapping(entry, {'provider', 'model'})
         if not {'provider', 'model'} <= set(entry) or any(not isinstance(item, str) or not item for item in entry.values()):
             raise DeploymentError('invalid_verified_settings')
 

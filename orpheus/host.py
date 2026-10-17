@@ -35,8 +35,8 @@ class SubagentAdapter:
     """Persist before submission; delegate parent ownership checks to the host.
 
     ``verified_settings`` is operator-managed deployment evidence, not plugin
-    discovery or a provider capability guess. Effort additionally requires the
-    public per-launch-v1 extension shipped separately in compat/.
+    discovery or a provider capability guess. Native effort overrides are not
+    supported; omitted effort uses the host's inherited behavior.
     """
     def __init__(self, lifecycle, state_dir, deployment=None, *, redact_literals=None):
         self.lifecycle = lifecycle
@@ -91,35 +91,24 @@ class SubagentAdapter:
             self.db.close()
 
     def capabilities(self):
-        extended = False
-        fallback_control = False
-        probe = getattr(self.lifecycle, 'capabilities', None)
-        if callable(probe):
-            try:
-                capabilities = probe()
-                extended = capabilities.get('reasoning_effort') == 'per-launch-v1'
-                fallback_control = capabilities.get('disable_fallback') == 'per-launch-v1'
-            except Exception:
-                pass
         return {'model': 'unverified', 'provider': 'unverified',
-                'effort': 'unverified' if extended else 'unsupported',
-                'effort_contract': extended, 'fallback_control': fallback_control, 'restart_recovery': 'unsupported',
-                'reason': 'Launch requires deployment-specific verified settings and disabled provider fallback.'}
+                'effort': 'unsupported', 'restart_recovery': 'unsupported',
+                'reason': 'Native effort overrides are unsupported. Launch requires verified model/provider settings and disabled provider fallback.'}
 
     def preflight(self, selection):
         settings = selection['resolved']
         permitted = {'provider', 'model', 'effort', 'instructions', 'allowed_toolsets'}
         if set(settings) - permitted:
             raise HostError('unsupported_field', 'Native launch includes unsupported fields.')
-        if 'effort' in settings and not self.capabilities()['effort_contract']:
-            raise HostError('unsupported_effort', 'Host lacks verified public per-launch effort contract.')
+        if 'effort' in settings:
+            raise HostError('unsupported_effort', 'Native effort overrides are unsupported on the stock lifecycle API.')
         if settings.get('allowed_toolsets') == []:
             raise HostError('unsupported_tools', 'An empty native toolset means inheritance and cannot enforce no tools.')
-        if not self.capabilities()['fallback_control'] and self.deployment.get('fallback_disabled') is not True:
+        if self.deployment.get('fallback_disabled') is not True:
             raise HostError('unverified_fallback', 'Provider fallback must be verified disabled before launch.')
-        wanted = {k: settings[k] for k in ('provider', 'model', 'effort') if k in settings}
+        wanted = {k: settings[k] for k in ('provider', 'model') if k in settings}
         if wanted not in self.deployment.get('verified_settings', []):
-            raise HostError('unverified_settings', 'Exact provider/model/effort requires deployment verification.')
+            raise HostError('unverified_settings', 'Exact provider/model requires deployment verification.')
         if 'allowed_toolsets' in settings:
             allowed = self.deployment.get('allowed_toolsets', [])
             if not set(settings['allowed_toolsets']).issubset(allowed):
@@ -136,13 +125,10 @@ class SubagentAdapter:
         request_id = selection.get('request_id') or str(uuid.uuid4())
         request = {'goal': task, 'model': settings['model'], 'provider': settings['provider'],
                    'correlation_id': request_id, 'metadata': {'orpheus_request_id': request_id}}
-        if self.capabilities()['fallback_control']:
-            request['disable_fallback'] = True
         if context_parts:
             request['context'] = '\n\n'.join(context_parts)
-        for key in ('effort', 'allowed_toolsets'):
-            if key in settings:
-                request['reasoning_effort' if key == 'effort' else key] = settings[key]
+        if 'allowed_toolsets' in settings:
+            request['allowed_toolsets'] = settings['allowed_toolsets']
         if len(task) > 16000 or len(request.get('context', '')) > 32000:
             raise HostError('input_too_large', 'Task/context exceeds the public native lifecycle bounds.')
         with self.lock:

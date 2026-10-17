@@ -4,7 +4,7 @@ Date: 2026-10-17 (Asia/Seoul). Status: source/documentation assessment plus isol
 
 ## Verdict
 
-**Subagent presets and model selection are feasible as a standalone plugin; subagent dynamic effort has an unproven public-hook/middleware approach, blocked pending reliable binding and enforcement.** Preset storage, discovery, parent-agent selection, parent-proposed or rule/System One dynamic resolution, and per-child model/provider selection fit existing extension surfaces. The direct lifecycle request has no effort field. A public middleware adapter is a plausible alternative to an upstream extension, with additional correctness obligations below.
+**Current scope (user, 2026-10-17): implement subagent presets/model selection and webhook model/effort selection using stock public APIs only. Native dynamic effort, per-child fallback/max-turn controls, upstream patches and middleware effort experiments are deferred.** Preset storage, discovery, parent-agent selection, parent-proposed or rule/System One dynamic resolution, and per-child model/provider selection fit existing extension surfaces. The direct lifecycle request has no effort field. A public middleware adapter is a plausible alternative to an upstream extension, with additional correctness obligations below.
 
 Optional per-preset iteration limits need another public launch field. Do not interpret the two launch gaps as a reason to build a new agent runtime or to silently discard selected values.
 
@@ -83,7 +83,7 @@ This is a design inference, not a verified launch mechanism. It remains blocked 
 
 Middleware errors are fail-open by documented design. A required effort cannot silently become the parent's default if the adapter fails. An implementation must demonstrate a supported fail-closed launch/request policy or reject that host/provider combination. Merely catching errors or setting a best-effort middleware field is not enough to satisfy the product contract. Optional iteration limits remain a separate gap; this request adapter does not enforce agent-loop budgets.
 
-## Preferred subagent upstream extension
+## Deferred research: subagent upstream extension
 
 Propose optional per-launch `reasoning_effort` support on the public request. A candidate precedence is explicit request > delegation configuration > parent; the exact policy must be agreed upstream. Validate the selected provider/model combination and verify the effective provider request, rather than merely accepting a string in configuration. Preserve existing defaults when the field is absent and reject unsupported combinations clearly.
 
@@ -95,9 +95,9 @@ Use feature/capability detection against the installed host. A version label alo
 
 | Approach | Assessment |
 |---|---|
-| Public lifecycle plugin plus small upstream extension | Preferred clean contract for effort and optional iteration budgets; preserves native parent/child lifecycle. |
+| Public lifecycle plugin plus small upstream extension | Deferred: a clean contract if native effort and optional iteration budgets are included in a future release. |
 | Public child-start hook plus LLM request middleware | Plausible plugin-only effort path; requires explicit proof of correlation, isolation, fallback and enforcement. No live proof yet. |
-| Plugin-only first release with dynamic model with effort not configurable per preset | Feasible reduced scope, but does **not** fulfill dynamic effort; presets declaring effort must be rejected. Requires an explicit product scope choice. |
+| Plugin-only first release with dynamic model with effort not configurable per preset | Feasible reduced scope, but does **not** fulfill dynamic effort; presets declaring effort must be rejected. This is the user-selected current release scope. |
 | Separate Hermes CLI subprocess per preset | Can expose different CLI controls, but adds process, cancellation, result, and approval integration and may change memory/profile semantics. Not established as equivalent to native children. |
 | Temporarily mutate global config or patch child objects | Reject as architecture: concurrent launches can interfere and private API compatibility is not guaranteed. |
 
@@ -112,4 +112,4 @@ Use feature/capability detection against the installed host. A version label alo
 - Evaluate Korean and English task routing on a curated task set, including easy/complex and ambiguous tasks. Measure correctness, latency, and cost with account access; no benchmark claims are made here.
 - Verify existing skill and memory behavior is unchanged. This assessment does not establish a particular memory-provider hook's persistence behavior.
 
-No installed-plugin tests or live selection calls were run during this assessment. Isolated webhook source probes are documented separately. The next concrete step is to settle field-mode/selector choices and run a bounded middleware proof of concept. Prefer the upstream API addition if native effort semantics cannot be preserved through supported middleware.
+No installed-plugin tests or live selection calls were run during this assessment. Isolated webhook source probes are documented separately. The user selected the plugin-only release with native effort omitted. Middleware experiments and upstream additions are future research only; current implementation and deployment limits are recorded in implementation.md.

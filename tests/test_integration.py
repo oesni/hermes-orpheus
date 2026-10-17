@@ -11,7 +11,7 @@ from unittest.mock import patch
 import yaml
 from orpheus.cli import main
 from orpheus.plugin import register
-from tests.test_host import ExtendedLifecycle
+from tests.test_host import Lifecycle
 from tests.test_plugin import Context
 
 
@@ -40,27 +40,26 @@ class IntegrationTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_model_only_original_schema_through_registered_tool(self):
         preset=self.config['presets'][0]
-        del preset['fields']['effort']
         preset['compatible_settings']={'only':{'model':'small'}}
-        self.deployment['subagent']['verified_settings']=[{'provider':'configured-provider','model':'configured-model'}]
+        self.deployment['subagent']['verified_settings']=[{'provider':'configured-provider','model':'configured-small-model'}]
         self.load()
         result=await self.tool('orpheus_spawn',{'task':'Analyze evidence','preset_id':'analyst','proposals':{'model':'small'}})
         self.assertEqual(result['state'],'running')
         call=self.ctx.subagent_lifecycle.calls[0]
-        self.assertEqual(call['model'],'configured-model')
+        self.assertEqual(call['model'],'configured-small-model')
         self.assertIn('Explain conclusions',call['context'])
         self.assertNotIn('reasoning_effort',call)
         status=await self.tool('orpheus_status',{'request_id':result['request_id']})
         self.assertEqual(status['state'],'RUNNING')
 
-    async def test_extended_effort_choices_are_per_launch(self):
-        self.ctx.subagent_lifecycle=ExtendedLifecycle()
-        self.deployment['subagent']={'verified_settings':[{'provider':'configured-provider','model':'configured-model','effort':value} for value in ('low','high')]}
+    async def test_stock_model_choices_are_per_launch(self):
+        self.ctx.subagent_lifecycle=Lifecycle()
+        self.deployment['subagent']={'fallback_disabled':True,'verified_settings':[{'provider':'configured-provider','model':model} for model in ('configured-small-model','configured-large-model')]}
         self.load()
-        results=await asyncio.gather(*[self.tool('orpheus_spawn',{'task':'Identical task','preset_id':'analyst','proposals':{'effort':value}}) for value in ('low','high')])
+        results=await asyncio.gather(*[self.tool('orpheus_spawn',{'task':'Identical task','preset_id':'analyst','proposals':{'model':value}}) for value in ('small','large')])
         self.assertTrue(all(r.get('state')=='running' for r in results),results)
-        self.assertEqual([c['reasoning_effort'] for c in self.ctx.subagent_lifecycle.calls],['low','high'])
-        self.assertTrue(all(c['disable_fallback'] for c in self.ctx.subagent_lifecycle.calls))
+        self.assertEqual([c['model'] for c in self.ctx.subagent_lifecycle.calls],['configured-small-model','configured-large-model'])
+        self.assertTrue(all('reasoning_effort' not in c and 'disable_fallback' not in c for c in self.ctx.subagent_lifecycle.calls))
         self.assertEqual(len({c['correlation_id'] for c in self.ctx.subagent_lifecycle.calls}),2)
 
     async def test_cancel_during_real_resolver_await_prevents_launch(self):
@@ -94,13 +93,12 @@ class CliTests(unittest.TestCase):
         self.assertEqual(status,0)
         preset=report['presets'][0]
         self.assertEqual(preset['candidate_count'],2)
-        self.assertEqual({c['resolved']['effort'] for c in preset['expanded_settings']},{'low','high'})
-        self.assertEqual(preset['expanded_settings'][0]['resolved']['model'],'configured-model')
+        self.assertEqual({c['resolved']['model'] for c in preset['expanded_settings']},{'configured-small-model','configured-large-model'})
         self.assertEqual(preset['expanded_settings'][0]['resolved']['provider'],'configured-provider')
 
     def test_validate_reports_quarantined_definition_nonzero(self):
         config=yaml.safe_load((ROOT/'examples/presets.yaml').read_text())
-        config['presets'][0]['fields']['effort']['candidates']=[]
+        config['presets'][0]['fields']['model']['candidates']=[]
         status,report=self.run_cli('validate',config)
         self.assertEqual(status,1)
         self.assertFalse(report['valid'])

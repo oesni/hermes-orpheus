@@ -10,7 +10,7 @@ Date: 2026-10-17. Reviewer: independent Claude CLI, requested and reported model
 | [2](claude-round-2.md) | REQUEST_CHANGES | All first-round findings resolved; subagent typed inputs, tuple reachability, early cancellation, response reporting and result retention clarified. |
 | [3](claude-round-3.md) | APPROVE | All second-round findings resolved; no remaining material findings. |
 
-Exact reviewed file hashes are in [round 1 snapshot](claude-round-1-snapshot.json), [round 2 snapshot](claude-round-2-snapshot.json), and [final snapshot](claude-round-3-snapshot.json). Reports are preserved as returned. The four final reviewed documents remain byte-identical to the round-3 snapshot.
+Exact reviewed file hashes are in [round 1 snapshot](claude-round-1-snapshot.json), [round 2 snapshot](claude-round-2-snapshot.json), and [final snapshot](claude-round-3-snapshot.json). Reports are preserved as returned. Those hashes describe the original reviewed documents. Later user-requested scope updates are separate changes and do not inherit the original document approval automatically.
 
 The reviewer suggested three optional editorial/operational clarifications: refer to the subagent input schema explicitly in Jev projection wording, identify `stopping` as cancellation state, and describe storage-pressure admission handling for permanent replay tombstones. These are recorded without changing the approved snapshot.
 
@@ -30,4 +30,10 @@ The runtime implementation was reviewed separately through fresh Claude CLI invo
 
 **Final implementation source verdict: APPROVE, with no unresolved review findings.** Integrated local verification: 98 tests and 21 subtests passed, pinned patch verification passed, and wheel/source builds passed. This combines the complete round-4 source review with the round-5 delta review; it is not a live deployment approval.
 
-Each numbered report has a sibling `implementation-round-N-snapshot.json` containing exact supplied-file hashes. The separate [CI review](implementation-ci.md) approved the workflow, ignore settings and compatibility verifier. Approvals cover source inspection only: no reviewer executed a real Hermes gateway, provider or Jev call. See [implementation limits](../implementation.md) and [compatibility patch](../../compat/README.md).
+Each numbered report has a sibling `implementation-round-N-snapshot.json` containing exact supplied-file hashes. The separate [CI review](implementation-ci.md) approved the workflow, ignore settings and compatibility verifier. Approvals cover source inspection only: no reviewer executed a real Hermes gateway, provider or Jev call. See [implementation limits](../implementation.md) for the current stock-only release.
+
+## Core-unmodified release scope
+
+The user subsequently requested only features supported without Hermes core changes. The companion patch/fixtures and patch tests were removed; native effort/fallback extension support was removed, native examples now select models only, and webhook model/effort selection remains. Reviews above are historical snapshots of the broader implementation; the scoped update is reviewed separately.
+
+[Core-unmodified scope review](stock-only.md): Claude APPROVE, no P0/P1/P2. Minor wording/test-name corrections were applied afterward; optional early capability warnings remain future UX work (unsupported effort is already visible in discovery and rejected at launch). Full verification passed 92 tests plus 22 subtests and package builds. Removed compatibility references were checked in active source/config/docs; historical review reports retain their original text. The webhook deployment example contains no native effort override.

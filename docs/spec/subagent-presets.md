@@ -1,10 +1,10 @@
 # hermes-orpheus: subagent and webhook session presets
 
-Status: requirements draft, 2026-10-17. This document describes desired behavior, not implemented or verified functionality.
+Status: requirements, updated scope 2026-10-17. The user selected a core-unmodified first release. Native effort overrides and per-child maximum-turn/fallback controls are deferred; webhook model/effort selection remains in scope. Provider behavior still requires deployment verification.
 
 ## Summary
 
-hermes-orpheus provides reusable presets for subagents and new top-level sessions started by webhooks. Selection policy depends on the entry point: an existing parent LLM may choose a subagent's preset, model, and effort, while webhook sessions use only configured rules or TypeSafe's System One API (Jev) for all such choices before task execution. Declared field constraints and runtime capabilities apply to both paths.
+hermes-orpheus provides reusable presets for subagents and new top-level sessions started by webhooks. Selection policy depends on the entry point: an existing parent LLM may choose a subagent's preset and model, while webhook sessions use only configured rules or TypeSafe's System One API (Jev) for all such choices before task execution. Declared field constraints and runtime capabilities apply to both paths.
 
 ## Scope and decision status
 
@@ -26,7 +26,7 @@ This scope does not include a new UI, separate persistent Hermes profiles, autom
 
 4. Invalid presets are identified by name and validation reason. They cannot be selected for spawning. One invalid preset does not make unrelated valid presets unavailable; duplicate identifiers make every conflicting definition unavailable until corrected.
 
-5. **Confirmed selection constraint.** Selection policy is entry-point-specific. For subagents, the existing parent LLM may select a preset identifier after discovery, then propose model and effort where declared dynamic. For a new webhook session, configured rules or Jev must select preset identity, model, and effort; no LLM selector or LLM fallback is permitted. An administrator-configured fixed preset binding, including a webhook route binding, is a rule. One entry point's policy cannot be used to bypass the other's restrictions.
+5. **Confirmed selection constraint.** Selection policy is entry-point-specific. For subagents, the existing parent LLM may select a preset identifier after discovery, then propose a model where declared dynamic. Native effort is omitted and follows existing host behavior. For a new webhook session, configured rules or Jev must select preset identity, model, and effort; no LLM selector or LLM fallback is permitted. An administrator-configured fixed preset binding, including a webhook route binding, is a rule. One entry point's policy cannot be used to bypass the other's restrictions.
 
 ### Fixed and dynamic settings — proposed contract
 
@@ -40,7 +40,7 @@ This scope does not include a new UI, separate persistent Hermes profiles, autom
 
 10. A model selection identifies its provider unambiguously. Model and effort combinations are validated together. A valid effort label for one model is not assumed to work for another, and an unsupported effort is not silently dropped.
 
-11. **Confirmed requirement.** For subagents, the parent LLM or configured rules/Jev can choose effort to fit task complexity, such as lower effort for routine work and higher effort for complex analysis; the child must execute with the supported selected effort. For webhooks, rules/Jev choose effort and the new top-level session must execute with it. Guidance may be supplied by the preset author. A release offering only inherited effort does not satisfy this requirement. No execution path has yet been verified to fulfill it; see feasibility.
+11. **Current release scope (user, 2026-10-17).** Native subagent presets omit `effort`; fixed or dynamic effort declarations are rejected before native launch rather than silently dropped. The existing host reasoning behavior remains in effect. For webhook sessions, rules/Jev may choose effort and the public Run API receives it before the new task session starts. Per-native-child effort is deferred until a future scope decision; no Hermes patch is shipped for it.
 
 12. The initial candidate field set comprises child model/provider, reasoning effort, role instructions, and allowed toolsets. Only fields both declared dynamic and supported by the installed integration can vary. Actual support, especially reasoning effort, must be reported by feasibility and capability checks; listing a field here does not assert current Hermes support.
 

@@ -21,6 +21,7 @@ class Lifecycle:
 
 class ExtendedLifecycle(Lifecycle):
     def capabilities(self):
+        self.capability_probes=getattr(self,'capability_probes',0)+1
         return {'reasoning_effort':'per-launch-v1','disable_fallback':'per-launch-v1'}
 
 
@@ -36,8 +37,8 @@ class HostTests(unittest.TestCase):
         return adapter,host
     def test_baseline_effort_fails_before_launch(self):
         selected={**self.settings,'effort':'high'}
-        adapter,host=self.adapter(settings=selected)
-        with self.assertRaisesRegex(HostError,'per-launch'): adapter.launch({'resolved':selected},'task')
+        adapter,host=self.adapter()
+        with self.assertRaisesRegex(HostError,'unsupported'): adapter.launch({'resolved':selected},'task')
         self.assertEqual(host.calls,[])
     def test_unverified_tuple_and_fallback_fail_closed(self):
         adapter,host=self.adapter(fallback=False)
@@ -45,14 +46,19 @@ class HostTests(unittest.TestCase):
         adapter.deployment['fallback_disabled']=True
         with self.assertRaisesRegex(HostError,'Exact'): adapter.launch({'resolved':{**self.settings,'model':'other'}},'task')
         self.assertEqual(host.calls,[])
-    def test_extension_sends_per_launch_effort_and_fallback(self):
-        selected={**self.settings,'effort':'high'}
-        adapter,host=self.adapter(ExtendedLifecycle(),selected,fallback=False)
-        result=adapter.launch({'resolved':selected},'task',{'fact':'explicit'})
-        self.assertEqual(host.calls[0]['reasoning_effort'],'high')
-        self.assertTrue(host.calls[0]['disable_fallback'])
+    def test_extension_advertisement_does_not_enable_effort_or_fallback_override(self):
+        adapter,host=self.adapter(ExtendedLifecycle())
+        with self.assertRaisesRegex(HostError,'unsupported'):
+            adapter.launch({'resolved':{**self.settings,'effort':'high'}},'task')
+        self.assertEqual(host.calls,[])
+        result=adapter.launch({'resolved':self.settings},'task')
+        self.assertNotIn('reasoning_effort',host.calls[0])
+        self.assertNotIn('disable_fallback',host.calls[0])
+        self.assertEqual(getattr(host,'capability_probes',0),0)
         self.assertIsNone(result['observed'])
-        self.assertNotIn('capability',str(result))
+        adapter.deployment['fallback_disabled']=False
+        with self.assertRaisesRegex(HostError,'fallback'):
+            adapter.launch({'resolved':self.settings},'task')
     def test_native_ownership_required_for_status_and_cancel(self):
         adapter,host=self.adapter()
         launched=adapter.launch({'resolved':self.settings},'task')
