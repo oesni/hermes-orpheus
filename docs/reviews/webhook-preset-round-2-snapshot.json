@@ -1,0 +1,30 @@
+{
+  "base": "10d13fc",
+  "prior_review": "webhook-preset.md",
+  "files_sha256": {
+    "tests/live/hermes_api_bootstrap.py": "aa52fee8048eeafd106fd81414cce220569d4d4f9abd88f1537b8fb363183e33",
+    "tests/live/webhook_preset_smoke.py": "ab6ffc087427553e357583f580e55a4cc44a8f8a28bb5b701fafe679fd332ab2",
+    "tests/live/test_webhook_preset_smoke.py": "824af5ee06db9a449c1882439aea0d24eeaf1a8dc7373abeab0678c121a16949",
+    "tests/live/WEBHOOK.md": "6c9f8df6ca8900899f20c051630d09b960a4616673b7ac38ba013b404a89da6e",
+    "docs/evidence/webhook-preset/README.md": "3756a0ec40d42e293a8ca3182d49ac31eafb15c163f73571a4781ba3410e2090",
+    "docs/evidence/webhook-preset/receipt.json": "4448ed5e33999ab9a1c0dac838ada2b14eead0102348dcf769f528b4915c232a",
+    "docs/evidence/webhook-preset/operator-metadata.json": "f037f8582641cd2263eb0cbb25ad8368f71b1b12bdbe73f18267a96e1942e211",
+    "docs/evidence/webhook-preset/bootstrap-receipt.json": "f8d48a228d1a9ac5bcbb77f7c1373e2b0101c656043d32fb10e9401b2863e97f",
+    "docs/implementation.md": "b470ff355d623ca6c5945cd8f12716df8f71e73989809d937602473615c8b0c5",
+    "orpheus/webhook.py": "cfc8a8ac7dda7af90559639beef3e7b5c005e689893a69d0ec108455e83ed6e8"
+  },
+  "changed_since_prior_review": [
+    "tests/live/hermes_api_bootstrap.py",
+    "tests/live/webhook_preset_smoke.py",
+    "tests/live/test_webhook_preset_smoke.py",
+    "tests/live/WEBHOOK.md",
+    "docs/evidence/webhook-preset/README.md",
+    "docs/evidence/webhook-preset/receipt.json",
+    "docs/evidence/webhook-preset/operator-metadata.json"
+  ],
+  "validation": "Author reports120tests57subtests passed; final hardened live2completed runs; no reviewer execution",
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0
+}

@@ -1,0 +1,7 @@
+{
+  "stopped": true,
+  "protected_configuration_files": 5,
+  "protected_configuration_unchanged": true,
+  "real_adapter": true,
+  "full_gateway_started": false
+}

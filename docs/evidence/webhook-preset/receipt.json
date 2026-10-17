@@ -1,0 +1,69 @@
+{
+  "scope": "Signed HTTP ingress, production registry/resolver/client, upstream public Run API",
+  "requested_model": "claude-opus-5-5[1m]",
+  "requested_provider": "claude-subscription-directsdk-experimental",
+  "cases": [
+    {
+      "route": "reviewer",
+      "preset_id": "reviewer",
+      "tuple_id": "review",
+      "request_id": "39438781de1e4e88af5e405986ce7c04",
+      "host_id": "run_1133c593e9c845ee9c16b1a748294d0a",
+      "session_id": "run_1133c593e9c845ee9c16b1a748294d0a",
+      "state": "completed",
+      "replay_deduplicated": true,
+      "payload_overrides_ignored": true,
+      "exact_launch_payload_verified": true,
+      "finding": {
+        "preset_marker": "reviewer",
+        "input_cents": 10000,
+        "actual_cents": 10000,
+        "expected_cents": 9000,
+        "corrected_operator": ">="
+      },
+      "observed": {
+        "final_runtime": {
+          "model": "claude-opus-5-5[1m]",
+          "provider": "claude-subscription-directsdk-experimental"
+        },
+        "source": "host_run_status.runtime",
+        "effort": null,
+        "coverage": "final_pair_only",
+        "acquired_at": 1792246363.2129338
+      }
+    },
+    {
+      "route": "auditor",
+      "preset_id": "auditor",
+      "tuple_id": "review",
+      "request_id": "dfbf15315e714784a9cec916565acef6",
+      "host_id": "run_92e2e9a64e724a61a61c882dfc2d591a",
+      "session_id": "run_92e2e9a64e724a61a61c882dfc2d591a",
+      "state": "completed",
+      "replay_deduplicated": true,
+      "payload_overrides_ignored": true,
+      "exact_launch_payload_verified": true,
+      "finding": {
+        "preset_marker": "auditor",
+        "input_cents": 10000,
+        "actual_cents": 10000,
+        "expected_cents": 9000,
+        "corrected_operator": ">="
+      },
+      "observed": {
+        "final_runtime": {
+          "model": "claude-opus-5-5[1m]",
+          "provider": "claude-subscription-directsdk-experimental"
+        },
+        "source": "host_run_status.runtime",
+        "effort": null,
+        "coverage": "final_pair_only",
+        "acquired_at": 1792246366.7513049
+      }
+    }
+  ],
+  "unauthenticated_rejected": true,
+  "distinct_run_scoped_session_ids_verified": true,
+  "upstream_submissions": 2,
+  "passed": true
+}

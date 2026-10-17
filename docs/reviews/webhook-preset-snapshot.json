@@ -1,0 +1,23 @@
+{
+  "base": "10d13fc",
+  "files_sha256": {
+    "tests/live/hermes_api_bootstrap.py": "c795711b7a2d952196c4f1674ac591bfd569ad466753f64a93d73cad44903e4e",
+    "tests/live/webhook_preset_smoke.py": "1079ea39a52699a89f926885a4d07f77a9a8c321e9785e8699e88c36c10d081e",
+    "tests/live/test_webhook_preset_smoke.py": "0cf2ef2dcd53648a6626e3f16195909987db6e02d62c81f3629d9548c3b7b161",
+    "tests/live/WEBHOOK.md": "4a7970d57c7d0faa1e8a691040d8de590d9f91b6914c8233222420218511a65c",
+    "docs/evidence/webhook-preset/README.md": "b4b01f5da10829ea92423c9e23fa667a70691d77a8037f635c23c3de9ac6c30e",
+    "docs/evidence/webhook-preset/receipt.json": "ae0ea8f9c01c92069c3514d9b5babb269d40919be0716e83115e05f4752689af",
+    "docs/evidence/webhook-preset/operator-metadata.json": "668c20f68bd727ad705d6d40c61fde5d95f900de4cfbc142ed0c3a9674450e57",
+    "docs/evidence/webhook-preset/bootstrap-receipt.json": "f8d48a228d1a9ac5bcbb77f7c1373e2b0101c656043d32fb10e9401b2863e97f",
+    "docs/implementation.md": "b470ff355d623ca6c5945cd8f12716df8f71e73989809d937602473615c8b0c5",
+    "orpheus/webhook.py": "cfc8a8ac7dda7af90559639beef3e7b5c005e689893a69d0ec108455e83ed6e8"
+  },
+  "context_only": [
+    "orpheus/webhook.py"
+  ],
+  "validation": "Author reports117tests57subtests passed; real smoke2completed runs; no reviewer execution",
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0
+}

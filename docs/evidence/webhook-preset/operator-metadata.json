@@ -1,0 +1,37 @@
+{
+  "tested_date": "2026-10-17",
+  "hermes_revision": "d923a5eb487a17c0a68801bba9ef0f56c81040a8",
+  "files_sha256": {
+    "tests/live/webhook_preset_smoke.py": "ab6ffc087427553e357583f580e55a4cc44a8f8a28bb5b701fafe679fd332ab2",
+    "tests/live/test_webhook_preset_smoke.py": "824af5ee06db9a449c1882439aea0d24eeaf1a8dc7373abeab0678c121a16949",
+    "tests/live/hermes_api_bootstrap.py": "aa52fee8048eeafd106fd81414cce220569d4d4f9abd88f1537b8fb363183e33",
+    "orpheus/webhook.py": "cfc8a8ac7dda7af90559639beef3e7b5c005e689893a69d0ec108455e83ed6e8",
+    "orpheus/resolver.py": "6b019a6ebd8ffc5c929225ade4b6d0f03fc4579786641b7480a84e8a14afd5da",
+    "orpheus/config.py": "00a95ac25a697f3e87ab684d1fb58bc1d225908cffab1abf172653f331b65cb1",
+    "orpheus/ledger.py": "3a084fd5b80e615412231aafbfbffe3fc88f8706f32295f6f46f146d0042ff5f"
+  },
+  "receipt_sha256": "4448ed5e33999ab9a1c0dac838ada2b14eead0102348dcf769f528b4915c232a",
+  "verifier_exit": 0,
+  "verifier_process": "Python wrapper invoking webhook_preset_smoke.run in nonoptimized mode; exact source hashes checked before and after",
+  "real_model_runs_in_this_receipt": 2,
+  "total_real_model_runs_for_task": 4,
+  "prior_run_note": "Two earlier successful runs preceded verifier hardening. Their private original receipts remain outside Git; this public receipt is the final hardened two-case run.",
+  "bootstrap_receipt_sha256": "f8d48a228d1a9ac5bcbb77f7c1373e2b0101c656043d32fb10e9401b2863e97f",
+  "operator_observations": {
+    "bootstrap_process_exit": 0,
+    "active_connection_file_absent_after_cleanup": true,
+    "hermes_checkout_clean": true,
+    "protected_path_labels": [
+      "workspace root dotenv",
+      "Hermes dotenv",
+      "Hermes config",
+      "Orpheus review presets",
+      "Orpheus review deployment"
+    ]
+  },
+  "post_live_test_only_correction": {
+    "path": "tests/live/test_webhook_preset_smoke.py",
+    "current_sha256": "cd18f4c9ab563020dc4f87d18e8b786af6ef8127f88e81f0119c7cc581428ade",
+    "note": "Narrowed pytest.raises to the probe.run call only after the final live run. files_sha256 preserves the test file hash at live execution; the unit test is not imported by the live probe. Runtime, live harness, bootstrap, and receipts unchanged."
+  }
+}
