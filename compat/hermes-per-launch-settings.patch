@@ -1,0 +1,84 @@
+--- a/agent/subagent_lifecycle.py
++++ b/agent/subagent_lifecycle.py
+@@ -59,6 +59,8 @@
+     correlation_id: Optional[str] = None
+     metadata: Mapping[str, Any] = dataclasses.field(default_factory=dict)
+     timeout_seconds: Optional[float] = None
++    reasoning_effort: Optional[str] = None
++    disable_fallback: bool = False
+ 
+ 
+ @dataclasses.dataclass(frozen=True)
+@@ -225,12 +227,20 @@
+     (lambda r: r.role not in {"leaf", "orchestrator"}, "role must be 'leaf' or 'orchestrator'."),
+     (lambda r: r.provider is not None and (not isinstance(r.provider, str) or not r.provider.strip() or len(r.provider) > 64),
+      "provider must be a non-empty string of at most 64 characters."),
++    (lambda r: type(r.disable_fallback) is not bool, "disable_fallback must be a boolean."),
++    (lambda r: r.reasoning_effort is not None and not _valid_launch_effort(r.reasoning_effort),
++     "reasoning_effort must be a recognized non-empty effort string."),
+     (lambda r: r.timeout_seconds is not None, "Per-launch timeout is not supported; configure delegation timeout explicitly."),
+     (lambda r: r.working_directory is not None,
+      "working_directory is not supported because Hermes delegates use isolated task environments."),
+     (lambda r: bool(r.blocked_tools),
+      "Per-tool blocking is not supported; use allowed_toolsets. Hermes always blocks unsafe child tools."),
+ )
++
++
++def _valid_launch_effort(value: Any) -> bool:
++    from hermes_constants import parse_reasoning_effort
++    return isinstance(value, str) and parse_reasoning_effort(value) is not None
+ 
+ 
+ def _handle_is_well_formed(handle: Any) -> bool:
+@@ -274,6 +284,10 @@
+     def __init__(self, parent_agent_resolver: Callable[[], Any]) -> None:
+         self._parent_agent_resolver = parent_agent_resolver
+ 
++    def capabilities(self) -> dict[str, str]:
++        """Construction contract only; provider-specific enforcement needs deployment evidence."""
++        return {"reasoning_effort": "per-launch-v1", "disable_fallback": "per-launch-v1"}
++
+     def launch(self, request: SubagentLaunchRequest | Mapping[str, Any]) -> SubagentHandle:
+         parent = self._parent_agent_resolver()
+         if parent is None:
+@@ -303,7 +317,9 @@
+             task_index=0, goal=request.goal, context=request.context,
+             toolsets=list(request.allowed_toolsets) if request.allowed_toolsets else None,
+             model=request.model or creds["model"], max_iterations=DEFAULT_MAX_ITERATIONS,
+-            task_count=1, parent_agent=parent, role=request.role, **_credential_overrides(creds, routing_cfg),
++            task_count=1, parent_agent=parent, role=request.role,
++            reasoning_effort=request.reasoning_effort, disable_fallback=request.disable_fallback,
++            **_credential_overrides(creds, routing_cfg),
+         )
+         subagent_id = str(getattr(child, "_subagent_id", "") or "")
+         if not subagent_id:
+--- a/tools/delegate_tool.py
++++ b/tools/delegate_tool.py
+@@ -221,6 +221,8 @@
+     routing_cfg: Optional[dict[str, Any]] = None,
+     # Legacy; accepted for wire compat but ignored (capability is depth-derived).
+     role: str = "leaf",
++    reasoning_effort: Optional[str] = None,
++    disable_fallback: bool = False,
+ ):
+     """Build (don't run) a child AIAgent on the main thread. override_* (from delegation config) replace parent
+     inheritance so children can run on a different provider:model pair."""
+@@ -266,6 +268,18 @@
+         override_acp_args=override_acp_args,
+         routing_cfg=routing_cfg,
+     )
++    # Per-launch overrides affect only the new runtime dictionary. Never mutate
++    # parent reasoning, delegation configuration or another child.
++    if type(disable_fallback) is not bool:
++        raise ValueError("disable_fallback must be a boolean")
++    if reasoning_effort is not None:
++        from hermes_constants import parse_reasoning_effort
++        parsed_effort = parse_reasoning_effort(reasoning_effort) if isinstance(reasoning_effort, str) else None
++        if parsed_effort is None:
++            raise ValueError("reasoning_effort must be a recognized non-empty effort string")
++        rt["reasoning_config"] = parsed_effort
++    if disable_fallback:
++        rt["fallback_model"] = None
+     if override_request_overrides is not None:
+         # honored whenever set, incl. the inherit branch where
+         # _resolve_delegation_credentials already merged OVER the parent's

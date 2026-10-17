@@ -1,0 +1,69 @@
+# The sender supplies a JSON object with kind/title/description.
+# kind is routing input, never an authorization claim.
+schema_version: 1
+inventory:
+  models:
+    small:
+      provider: configured-provider
+      model: configured-small-model
+      efforts: [low, high]
+    large:
+      provider: configured-provider
+      model: configured-large-model
+      efforts: [high]
+presets:
+  - id: analyst
+    purpose: Analyze an incoming task and explain evidence.
+    fields:
+      model: {mode: enum, candidates: [small, large]}
+      effort: {mode: enum, candidates: [low, high]}
+      instructions: {mode: fixed, value: Explain conclusions and identify uncertainty.}
+    compatible_settings:
+      routine: {model: small, effort: low}
+      complex: {model: large, effort: high}
+policies:
+  incoming:
+    entrypoint: webhook
+    preset_selector: {id: incoming-preset, kind: fixed, preset: analyst, on_error: []}
+    field_resolver:
+      id: incoming-fields
+      kind: rules
+      on_error: []
+      rules:
+        - id: complex-task
+          priority: 10
+          when: {field: event.kind, op: eq, value: complex}
+          settings: complex
+        - id: routine-task
+          priority: 20
+          when: {field: event.kind, op: eq, value: routine}
+          settings: routine
+      no_match: {kind: error}
+webhooks:
+  - id: issue-analysis
+    path: /orpheus/webhooks/issue-analysis
+    policy: incoming
+    auth_profile: issue-source
+    execution_target: primary-api
+    event_schema:
+      event.kind:
+        source: body
+        pointer: /kind
+        type: enum
+        values: [routine, complex]
+        trust: payload
+      event.title:
+        source: body
+        pointer: /title
+        type: string
+        max_length: 256
+        trust: payload
+      event.description:
+        source: body
+        pointer: /description
+        type: string
+        max_length: 8192
+        trust: payload
+    routing_fields: [event.kind]
+    task_fields: [event.title, event.description]
+    receipt: {kind: disabled}

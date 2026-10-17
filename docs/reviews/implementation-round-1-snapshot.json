@@ -1,0 +1,40 @@
+{
+  "files_sha256": {
+    "README.md": "b13ef997d3cffaf994c837aa8602bc1c0fe4385f631a191a4bcf9e35fafb34af",
+    "pyproject.toml": "b6429dff1d49e084276b0e8c785458b8eeea825466b3185b8ca81fdba61a38f4",
+    "docs/implementation.md": "5228bbf25bbf245626a2f808149ff0925559e03b3483e64f42f53b44387f4f08",
+    "docs/spec/subagent-presets.md": "dfd193dad35244bf337ae5230d808008e7977d00441dbbed433bd96f2fa47b48",
+    "compat/README.md": "4346662b9763dbe82db67e0b787762680815847b72428091fcfb2c7bd0b4114f",
+    "compat/hermes-per-launch-settings.patch": "b83fca5b195c6187a41cf5969bf3c104034649814bdb7ac7e163c16f9c81ca9c",
+    "compat/verify_patch.py": "b7f452b6704a879aabb39944c04a16a38d03453fe93ccef27815a151460e833e",
+    "compat/source-manifest.json": "3073611e9f1c93a45e5bc9fef850ed3681548e966d02ab29394a947dad7286ae",
+    "examples/deployment.yaml": "494d62948fb3aec8a03eddb7093e7d76b25d702aa6f9746339bbdb55cadb290d",
+    "examples/presets.yaml": "09ea9e28f24b29595ccac3659407caa2e40561f8d601aee3dceea690a831431f",
+    "examples/webhook-deployment.yaml": "76d116920983bf1a91436ff28150e7e04612eefc91128933573f7bd195c0e150",
+    "examples/webhook-presets.yaml": "5181497944ec1390e943dd51e67354ae8b4aafc136c9da26741c681b914cd1df",
+    "orpheus/__init__.py": "41c106dbdf00713fec598592fe5a86722566d116adec138fa3954d4794a9dc85",
+    "orpheus/cli.py": "b731b7c75aeefa480fd1811c1f124a26f0f1e2c5e42d1199f2d499933d3e3e61",
+    "orpheus/config.py": "94de58798dad0cbf52f14008c5e0ae45565fb9ac529efcd441af3c94d2a004fa",
+    "orpheus/host.py": "9bde504edf26f18a5055ac7eaa80beb7e34f0a3ef0a476fd6d4a7e63934c2ee9",
+    "orpheus/jev.py": "cf7c0f3495f7c4ff090f306ec5ee918f8e1a5d6b1534410e3ed152474c2dd141",
+    "orpheus/ledger.py": "019121ee98e7c34b708bf844cb49268c35a7820e0adee7975ed5e4f318202972",
+    "orpheus/plugin.py": "46ee0ef8106d326ef6fb51b3163b2d3be4c4c21bbb5bf48f65421ee8b91fb530",
+    "orpheus/resolver.py": "3aee9cafa3411a57e098979f83c00cce3e7e627dcf4cb9b2ffde50e49a7ea76f",
+    "orpheus/webhook.py": "04baf1060a2ba159e03a00bf04746079901651c41b6a166ec6574e9affdc30b2",
+    "tests/__init__.py": "0cd529ccb8d1aaa0cb3daa6ac3e4542198c5368a497130a7509a0a194afca187",
+    "tests/test_config.py": "f68e9d1f89077d5b9dfd8aec550a06592e723d8862dae26a6d1ad7d2f7345174",
+    "tests/test_hermes_patch.py": "67b73e11ca4050b414b3e5f83ccd557e9603d7c951ca6296e372643dbd962ecc",
+    "tests/test_host.py": "27efe5952445ab6eed4bc9ef88d05cb6fd15075eee25ef2a23edcb5c30469d6c",
+    "tests/test_integration.py": "65bb298dbede9c207ac4c459ba631559cfab11d24c07f65e667814c277d34b11",
+    "tests/test_jev.py": "43f7a520c1b093318e5c0ce64c1991e17def641e9846b0b0cfc9c776c0f8f1fd",
+    "tests/test_ledger.py": "124a5db9e17cb2ac065e326175f44bb6d97e14625aa5fb519b8310cc946b4dce",
+    "tests/test_plugin.py": "64cf00e5b7d48c8edcdf8cf0c7b3dd7505f2899d519d50cebada053291d05032",
+    "tests/test_resolver.py": "abd315725c1cf4e8ee76fc65c8e48e0e25212e89cdf399f6fa7b14fe97deac9e",
+    "tests/test_webhook.py": "6718ce41f49adc0f47275398dc9daefad4958ffbf9ec9f557c0247c47b4556d0"
+  },
+  "requested_model": "claude-opus-5-5",
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0
+}

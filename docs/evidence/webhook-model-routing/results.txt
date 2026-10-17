@@ -1,0 +1,7 @@
+PASS: native pre_gateway_dispatch allow result ignores model/provider fields
+PASS: actual request middleware rewrites provider request model without mutating original
+PASS: actual extracted dispatch sends rewritten model through ORIGINAL agent callback; model/provider/base_url identity unchanged
+LIMIT: isolated source execution with stub registry/transport; no live Hermes integration, credentials or paid API calls
+PASS: actual API request decoder and runtime selector resolve requested model/provider for a fresh unaliased session; provider resolver is stubbed
+PASS: actual model_options decoder maps high effort to enabled reasoning_config
+PASS (AST only): /v1/runs forwards all three override fields; constructor wiring includes resolved model/runtime/reasoning_config

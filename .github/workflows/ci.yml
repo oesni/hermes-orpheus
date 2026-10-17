@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.11'
+          enable-cache: true
+      - name: Install locked dependencies
+        run: uv sync --locked
+      - name: Run tests
+        run: uv run --no-sync pytest -q
+      - name: Verify pinned Hermes compatibility patch
+        run: uv run --no-sync python compat/verify_patch.py
+      - name: Build distributions
+        run: uv build

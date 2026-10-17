@@ -1,0 +1,25 @@
+schema_version: 1
+inventory:
+  models:
+    small:
+      provider: configured-provider
+      model: configured-model
+      efforts: [low, high]
+presets:
+  - id: analyst
+    purpose: Analyze a task and explain the evidence.
+    fields:
+      model: {mode: fixed, value: small}
+      effort: {mode: enum, candidates: [low, high]}
+      instructions: {mode: fixed, value: Explain conclusions and identify uncertainty.}
+    compatible_settings:
+      routine: {model: small, effort: low}
+      complex: {model: small, effort: high}
+subagent_policy: interactive
+policies:
+  interactive:
+    entrypoint: subagent
+    input_schema:
+      task.text: {type: string, max_length: 16000, required: true, trust: payload}
+    preset_selector: {id: preset, kind: parent, on_error: []}
+    field_resolver: {id: fields, kind: parent, on_error: []}

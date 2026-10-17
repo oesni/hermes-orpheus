@@ -1,0 +1,50 @@
+{
+  "files_sha256": {
+    ".github/workflows/ci.yml": "7bab9ea1919e76fb403e315b269a29f94a7f17581f00705b472a3a7c6c5f2b68",
+    ".gitignore": "4d67cd9e3fcae669d8966b8458971a31187cf6ece7e078bc051885c8e963fbb3",
+    "README.md": "5c8b2c32ef2536312595bc38c7a1127eaf7796752c5c6f37db37975e55839745",
+    "pyproject.toml": "b6429dff1d49e084276b0e8c785458b8eeea825466b3185b8ca81fdba61a38f4",
+    "docs/implementation.md": "eab724cb3152ec52f1571bb56b6768b545268cd134d2ea7233f93458fac226a8",
+    "docs/spec/subagent-presets.md": "dfd193dad35244bf337ae5230d808008e7977d00441dbbed433bd96f2fa47b48",
+    "compat/README.md": "4346662b9763dbe82db67e0b787762680815847b72428091fcfb2c7bd0b4114f",
+    "compat/hermes-per-launch-settings.patch": "b83fca5b195c6187a41cf5969bf3c104034649814bdb7ac7e163c16f9c81ca9c",
+    "compat/verify_patch.py": "b7f452b6704a879aabb39944c04a16a38d03453fe93ccef27815a151460e833e",
+    "compat/source-manifest.json": "3073611e9f1c93a45e5bc9fef850ed3681548e966d02ab29394a947dad7286ae",
+    "examples/deployment.yaml": "70eb1d3a6a23fb78024e8135860291d1a9253a222f5b2ba1ed0c6f1ad59bb9f8",
+    "examples/presets.yaml": "09ea9e28f24b29595ccac3659407caa2e40561f8d601aee3dceea690a831431f",
+    "examples/webhook-deployment.yaml": "76d116920983bf1a91436ff28150e7e04612eefc91128933573f7bd195c0e150",
+    "examples/webhook-presets.yaml": "5181497944ec1390e943dd51e67354ae8b4aafc136c9da26741c681b914cd1df",
+    "orpheus/__init__.py": "41c106dbdf00713fec598592fe5a86722566d116adec138fa3954d4794a9dc85",
+    "orpheus/cli.py": "9e8e640330d1aa94288f8b9be2e54cf2375089f1b7d36b73a764054b42e2edf9",
+    "orpheus/config.py": "00a95ac25a697f3e87ab684d1fb58bc1d225908cffab1abf172653f331b65cb1",
+    "orpheus/deployment.py": "c82b691d2eb11bc218eb0267d14305a8f5d9929e055656972fd0477e94bab5da",
+    "orpheus/host.py": "ade7d85aaa3eaefdb18c599e22b2c5d2bfeff4c25dd63881f5a8233e1e8875d3",
+    "orpheus/jev.py": "cf7c0f3495f7c4ff090f306ec5ee918f8e1a5d6b1534410e3ed152474c2dd141",
+    "orpheus/ledger.py": "3a084fd5b80e615412231aafbfbffe3fc88f8706f32295f6f46f146d0042ff5f",
+    "orpheus/plugin.py": "e0ec290684b3ae1c47b36c230aa6c8056c96f8161b5b9310b5ef3eaf9c5244c6",
+    "orpheus/resolver.py": "6b019a6ebd8ffc5c929225ade4b6d0f03fc4579786641b7480a84e8a14afd5da",
+    "orpheus/webhook.py": "cfc8a8ac7dda7af90559639beef3e7b5c005e689893a69d0ec108455e83ed6e8",
+    "tests/__init__.py": "0cd529ccb8d1aaa0cb3daa6ac3e4542198c5368a497130a7509a0a194afca187",
+    "tests/test_config.py": "bded333c453fa24522bfe4f4649e314ace98269ee2b698fc44c0c4bb324ebc7d",
+    "tests/test_hermes_patch.py": "67b73e11ca4050b414b3e5f83ccd557e9603d7c951ca6296e372643dbd962ecc",
+    "tests/test_host.py": "e684b3c7cb8affedb4c991e38ab2cdece791dd0f381d0b340af572b8178945e2",
+    "tests/test_integration.py": "f173ad94235b20e805765e194698263a6eb78d38649b5408f7f1364339ab59cf",
+    "tests/test_jev.py": "43f7a520c1b093318e5c0ce64c1991e17def641e9846b0b0cfc9c776c0f8f1fd",
+    "tests/test_ledger.py": "e247731b16347975ffee092b59cd0b8e1bfd57c9cede9d74abb3203844f2268e",
+    "tests/test_plugin.py": "7100219d983640714b9be5c97cc68870f20f41b7e83e1b902f99d7782ff030a1",
+    "tests/test_resolver.py": "31ae06cf8bb98b5a6870e085404a181dc365d9d1b44e643b3ddd6616c4d7a97d",
+    "tests/test_webhook.py": "73062903d3d884216d7efbaf13232dc57c13f0d74abcb25b4c617f967e465f10"
+  },
+  "reviewed_delta": [
+    "orpheus/ledger.py",
+    "orpheus/webhook.py",
+    "tests/test_ledger.py",
+    "tests/test_webhook.py"
+  ],
+  "unchanged_review": "implementation-round-4-snapshot.json",
+  "requested_model": "claude-opus-5-5",
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0
+}

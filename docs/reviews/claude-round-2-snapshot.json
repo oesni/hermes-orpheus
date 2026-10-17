@@ -1,0 +1,13 @@
+{
+  "files_sha256": {
+    "docs/spec/subagent-presets.md": "dfd193dad35244bf337ae5230d808008e7977d00441dbbed433bd96f2fa47b48",
+    "docs/design.md": "65be1dfba59e3f6c8e1faadc137ddb9caef0bb94988ed825590b0b787031cfbe",
+    "docs/feasibility.md": "0c4f6dc8bb83f15144b13d4a5c2a93f4fdc7f04fb5374ddf8f4d55a3e12ee7d9",
+    "docs/webhook-feasibility.md": "980960a0552f3acc78049c49f6dc3b8930dd597af5eef32edf9be2f82d0fb156"
+  },
+  "requested_model": "claude-opus-5-5",
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0
+}

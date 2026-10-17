@@ -1,0 +1,32 @@
+# Separate administrator configuration; never accept these settings from events.
+# Set the environment variables in the Hermes process. Do not put secret values here.
+auth_profiles:
+  issue-source:
+    # Stable security scope: retain across key rotation and target changes.
+    scope: issue-source-v1
+    secret_env: ORPHEUS_ISSUE_HMAC_SECRET
+    signature_header: X-Hub-Signature-256
+# Body HMAC-SHA256: signature header is sha256=<hex digest of exact request bytes>.
+# Unsigned delivery-ID headers are not identities. Exact raw-body replay hashes
+# are retained indefinitely; identical-body legitimate events collapse together.
+targets:
+  primary-api:
+    url: https://example.invalid
+    token_env: ORPHEUS_HERMES_API_TOKEN
+    principal: configured-profile-and-credential-scope
+    # Keep false until host/provider integration evidence establishes settings,
+    # fallback behavior, fresh sessions and retained inherited instructions.
+    verified: false
+    fallback_disabled: false
+    models:
+      configured-small-model:
+        provider: configured-provider
+        efforts: [low, high]
+      configured-large-model:
+        provider: configured-provider
+        efforts: [high]
+# Keys are operator-token environment variable names; values are allowed scopes.
+# This credential is separate from the webhook secret and host API token.
+operators:
+  ORPHEUS_OPERATOR_TOKEN: [issue-source-v1]
+redact_literals: []

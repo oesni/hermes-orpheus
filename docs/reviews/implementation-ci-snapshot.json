@@ -1,0 +1,12 @@
+{
+  "files_sha256": {
+    ".github/workflows/ci.yml": "7bab9ea1919e76fb403e315b269a29f94a7f17581f00705b472a3a7c6c5f2b68",
+    ".gitignore": "4d67cd9e3fcae669d8966b8458971a31187cf6ece7e078bc051885c8e963fbb3",
+    "pyproject.toml": "b6429dff1d49e084276b0e8c785458b8eeea825466b3185b8ca81fdba61a38f4",
+    "compat/verify_patch.py": "b7f452b6704a879aabb39944c04a16a38d03453fe93ccef27815a151460e833e"
+  },
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0
+}

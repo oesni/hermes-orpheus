@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hermes-orpheus"
+version = "0.1.0"
+description = "Policy-bound execution presets for Hermes agents"
+requires-python = ">=3.11"
+dependencies = ["PyYAML>=6.0.2", "aiohttp>=3.11"]
+
+[project.scripts]
+orpheus = "orpheus.cli:main"
+
+[project.entry-points."hermes_agent.plugins"]
+hermes-orpheus = "orpheus.plugin:register"
+
+[tool.hatch.build.targets.wheel]
+packages = ["orpheus"]
+
+[dependency-groups]
+dev = ["pytest>=8.3"]

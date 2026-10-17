@@ -1,0 +1,8 @@
+{
+  "gateway/run_inbound_hooks.py": "3baf238d471c55cce58b2b11e2d14ef7e68a660f629bdb6a07e264c2d9b67186",
+  "hermes_cli/middleware.py": "3745ad211f365554a3c070083dc39d3ff9b6cdc93965f13d8796918433ec2328",
+  "agent/turn_api_call.py": "2897575995d8dcbe94bba666ef66043a64c52a6c99e72c45e7da64a5fbdf576b",
+  "gateway/platforms/api_server.py": "8a94879442e186effc23e373baf9747bea824811f1dd1bb875557886bdd2a7b6",
+  "gateway/platforms/api_server_request_options.py": "7cff5468f5626d6c4fb33146e27b5753d54bf55affc21c88657771bf8bd95474",
+  "gateway/platforms/api_server_runs.py": "481b67c8cddd2dcca3a9b60d938d0cec5d621a4648784119873d60ffcd975138"
+}

@@ -1,0 +1,11 @@
+# Operator-controlled settings, separate from task/preset data. No secrets here.
+# Empty verified settings intentionally prevents launch until deployment tests pass.
+subagent:
+  fallback_disabled: false
+  verified_settings: []
+  allowed_toolsets: []
+redact_literals: []
+auth_profiles: {}
+targets: {}
+operators: {}
+jev_token_env: TYPESAFE_API_KEY
