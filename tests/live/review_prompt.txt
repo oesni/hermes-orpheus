@@ -1,0 +1,18 @@
+Run a real Orpheus subagent review smoke test. Do not answer the code review yourself.
+1. Call orpheus_presets and confirm the preset named reviewer exists and is usable.
+2. Call orpheus_spawn exactly once with preset_id reviewer. The preset fixes its model, so omit proposals. Pass the complete review task below as task.
+3. Repeatedly call orpheus_status with that spawn's exact returned request_id until the native state is SUCCEEDED and result.ready is true. If not ready, briefly wait and poll again. Do not spawn a replacement. Report failure if launch is rejected or becomes unknown.
+4. Return the request_id and the child's result summary unchanged. Do not fabricate a tool result.
+Use only Orpheus for delegation. Do not call delegate_task or any alternative subagent tool. Do not edit files, configuration, memory, or skills. The child needs no tools: all review input is included below.
+
+Child task:
+Review this self-contained Python function against its documented contract. Work read-only from the supplied text, without calling tools. Identify the most important concrete correctness issue and a reproducible input. Reply with a single JSON object, without Markdown fences, using keys function, input_cents, actual_cents, expected_cents, explanation. If there is no defect, use {"finding": "none"}.
+
+Contract: totals greater than or equal to 10_000 cents receive a 10% discount; lower totals receive no discount. Inputs are nonnegative integer cents. Round the discounted result down to integer cents.
+
+```python
+def discounted_total(total_cents: int) -> int:
+    if total_cents > 10_000:
+        return total_cents * 90 // 100
+    return total_cents
+```

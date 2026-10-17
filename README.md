@@ -23,14 +23,32 @@ uv build
 
 ## Install in a Hermes environment
 
-Install the package into the same Python environment that runs Hermes:
+For a managed Hermes installation, use its native directory-plugin loader. For an initial installation, run the following from the Orpheus repository root. It refuses an existing destination so copying cannot leave stale modules from an earlier version:
+
+```sh
+(
+  orpheus_plugin_dir="${HERMES_HOME:-$HOME/.hermes}/plugins/hermes-orpheus"
+  if [ -e "$orpheus_plugin_dir" ] || [ -L "$orpheus_plugin_dir" ]; then
+    printf '%s\n' 'Orpheus already exists; this recipe is for a fresh installation only.' >&2
+    exit 1
+  fi
+  mkdir -p "$orpheus_plugin_dir" &&
+    cp plugin.yaml __init__.py "$orpheus_plugin_dir/" &&
+    cp -R orpheus "$orpheus_plugin_dir/"
+)
+```
+
+Use the selected profile's actual `HERMES_HOME` when installing into a named profile. The manifest declares `PyYAML>=6.0.2,<7` and `aiohttp>=3.11,<4`. On the verified managed Hermes CLI, `hermes plugins enable` resolves and installs declared dependencies through Hermes's package manager as part of activation. Manifest parsing alone only validates the declarations. Let Hermes manage these dependencies; do not manually run pip against its managed runtime. The directory entry point imports its bundled package within Hermes's plugin namespace.
+
+For a conventional Python environment that you manage, installing the package into the same environment that runs Hermes is an alternative:
 
 ```sh
 uv pip install --python /path/to/hermes/.venv/bin/python /path/to/hermes-orpheus
-hermes plugins enable hermes-orpheus
 ```
 
-The package exposes the public `hermes_agent.plugins` entry point. Configure the following in the active Hermes profile's configuration, using your own absolute paths:
+This alternative exposes the public `hermes_agent.plugins` entry point. Choose one installation method for a profile to avoid duplicate plugin discovery.
+
+For either method, configure the following in the active Hermes profile's configuration, using your own absolute paths, then enable the plugin with `hermes plugins enable hermes-orpheus` (use `hermes -p PROFILE plugins enable hermes-orpheus` for a named profile):
 
 ```yaml
 plugins:
