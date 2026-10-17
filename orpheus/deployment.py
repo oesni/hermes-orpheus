@@ -2,6 +2,10 @@
 import os
 import stat
 from pathlib import Path
+from urllib.parse import urlsplit
+
+
+DEFAULT_JEV_ENDPOINT = "https://api.typesafe.ai/v1/systemone"
 
 
 class DeploymentError(ValueError):
@@ -9,6 +13,23 @@ class DeploymentError(ValueError):
     def __init__(self, code):
         super().__init__(code)
         self.code = code
+
+
+def validate_jev_endpoint(value):
+    """Accept a credential-free HTTPS endpoint without exposing invalid input."""
+    try:
+        if not isinstance(value, str) or not value or any(ord(char) <= 32 or ord(char) == 127 for char in value):
+            raise ValueError
+        parsed = urlsplit(value)
+        if (parsed.scheme != 'https' or not parsed.hostname or parsed.username is not None
+                or parsed.password is not None or '?' in value or '#' in value or '\\' in value):
+            raise ValueError
+        # Accessing port also rejects malformed and out-of-range values.
+        if parsed.port == 0:
+            raise ValueError
+    except ValueError:
+        raise DeploymentError('invalid_jev_endpoint') from None
+    return value
 
 
 def _mapping(value, allowed):
@@ -36,8 +57,11 @@ def validate_subagent(value):
 
 
 def validate_deployment(value):
-    _mapping(value, {'subagent', 'auth_profiles', 'targets', 'operators', 'redact_literals', 'jev_token_env'})
+    _mapping(value, {'subagent', 'auth_profiles', 'targets', 'operators', 'redact_literals', 'jev_token_env', 'jev_endpoint'})
     validate_subagent(value.get('subagent', {}))
+    validate_jev_endpoint(value.get('jev_endpoint', DEFAULT_JEV_ENDPOINT))
+    if value.get('jev_endpoint', DEFAULT_JEV_ENDPOINT) != DEFAULT_JEV_ENDPOINT and 'jev_token_env' not in value:
+        raise DeploymentError('jev_endpoint_requires_token_env')
     _strings(value.get('redact_literals', []))
     if 'jev_token_env' in value and (not isinstance(value['jev_token_env'], str) or not value['jev_token_env']):
         raise DeploymentError('invalid_jev_token_env')

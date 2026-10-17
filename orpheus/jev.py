@@ -4,10 +4,12 @@ import json
 import math
 import aiohttp
 from .resolver import SelectionError
+from .deployment import DEFAULT_JEV_ENDPOINT, validate_jev_endpoint
 
 
 class JevClient:
-    def __init__(self, token, session=None):
+    def __init__(self, token, session=None, *, endpoint=DEFAULT_JEV_ENDPOINT):
+        self.endpoint=validate_jev_endpoint(endpoint)
         self.token=token
         self.session=session
 
@@ -17,7 +19,7 @@ class JevClient:
         payload={'model':model,'state':state,'questions':{'selection':{'type':'choice','instructions':'Select the most suitable configured execution option for the supplied task.', 'criteria':choices}}}
         session=self.session or aiohttp.ClientSession()
         try:
-            async with session.post('https://api.typesafe.ai/v1/systemone',json=payload,headers={'Authorization':'Bearer '+self.token},timeout=aiohttp.ClientTimeout(total=timeout),allow_redirects=False) as response:
+            async with session.post(self.endpoint,json=payload,headers={'Authorization':'Bearer '+self.token},timeout=aiohttp.ClientTimeout(total=timeout),allow_redirects=False) as response:
                 if response.status in (401,403): raise SelectionError('Jev authentication failed','authentication_failed')
                 if response.status==429: raise SelectionError('Jev rate limited','rate_limited')
                 if response.status>=500: raise SelectionError('Jev unavailable','service_unavailable')
@@ -28,7 +30,7 @@ class JevClient:
                 except (ValueError,UnicodeDecodeError) as exc: raise SelectionError('Malformed Jev response','invalid_response') from exc
                 return self.validate(data,choices,min_confidence)
         except asyncio.TimeoutError as exc: raise SelectionError('Jev timeout','timeout') from exc
-        except aiohttp.ClientError as exc: raise SelectionError('Jev transport unavailable','service_unavailable') from exc
+        except aiohttp.ClientError: raise SelectionError('Jev transport unavailable','service_unavailable') from None
         finally:
             if self.session is None: await session.close()
 
@@ -37,7 +39,7 @@ class JevClient:
         answers=data.get('answers') if isinstance(data,dict) else None
         if not isinstance(answers,dict) or set(answers)!={'selection'} or not isinstance(answers['selection'],dict): raise SelectionError('Invalid Jev answer shape','invalid_response')
         answer=answers['selection']
-        if answer.get('type')!='choice' or answer.get('choice') not in choices: raise SelectionError('Invalid Jev choice','invalid_response')
+        if answer.get('type')!='choice' or not isinstance(answer.get('choice'), str) or answer['choice'] not in choices: raise SelectionError('Invalid Jev choice','invalid_response')
         probabilities=answer.get('probabilities')
         if not isinstance(probabilities,dict) or set(probabilities)!=set(choices) or any(type(v) not in (int,float) or not math.isfinite(v) or not 0<=v<=1 for v in probabilities.values()) or abs(sum(probabilities.values())-1)>1e-5: raise SelectionError('Invalid probabilities','invalid_response')
         confidence=answer.get('confidence')

@@ -85,10 +85,19 @@ Enable the Hermes API-server platform and register the plugin. Orpheus mounts `/
 
 Ingress supports SHA-256 HMAC over raw JSON body bytes, replay detection through durable body digests independent of unsigned delivery headers, typed body extraction and preselection filters. Receipts must be explicitly disabled in this initial implementation. Authentication, API target and operator credentials are separate; operator calls need a Bearer credential scoped to the route's stable security scope. Start from [webhook presets](examples/webhook-presets.yaml) and [webhook deployment](examples/webhook-deployment.yaml). See the implementation notes for supported configuration and limitations.
 
-Jev uses `TYPESAFE_API_KEY` by default (override `jev_token_env` in deployment configuration). It receives only configured context projections and finite choices. Webhook routing never invokes a parent/selector LLM or falls back to one. No Jev or task-provider calls have been performed during development verification.
+Jev uses `TYPESAFE_API_KEY` and `https://api.typesafe.ai/v1/systemone` by default. Configure the full endpoint and credential environment variable in the operator deployment file. For OpenRouter System One:
+
+```yaml
+jev_endpoint: https://openrouter.ai/api/v1/systemone
+jev_token_env: OPENROUTER_API_KEY
+```
+
+The policy's `model` must be an identifier supported by that endpoint, such as `typesafe/jev-1.14`. Use your existing environment variable name if different; store its value outside the repository. A custom endpoint requires an explicit `jev_token_env`, so changing the host cannot silently reuse the default credential variable. Legacy token-only overrides retain the default Typesafe endpoint. Only HTTPS endpoints without embedded credentials, query strings, or fragments are accepted, and redirects are disabled.
+
+Jev receives only configured context projections and finite choices. Webhook routing never invokes a parent/selector LLM or falls back to one. The [live Jev smoke test](docs/evidence/jev/README.md) verified resolver-only preset and compatible model/effort tuple selection through the subagent entrypoint against OpenRouter System One. Task model identifiers are synthetic; no downstream task model was launched. The default Typesafe endpoint was not tested live, and native subagent execution still rejects explicit effort.
 
 ## Execution guarantees and verification scope
 
 Launch intent and selections are persisted before submission. Duplicate webhook bodies reuse the original record. Ambiguous submissions remain `unknown` and are not automatically resubmitted; restart or polling cannot create replacement runs. Native ownership is checked through the public lifecycle before status/cancel access, and internal capability tokens are not returned to callers.
 
-Tests cover actual Orpheus registry/resolver/plugin wiring, a local HTTP server representing the public Hermes run API, and stock-shaped native lifecycle requests. An installed live Hermes/provider integration, effective provider effort, and production deployment acceptance remain separate gates. No production gateway was changed.
+Tests cover actual Orpheus registry/resolver/plugin wiring, a local HTTP server representing the public Hermes run API, and stock-shaped native lifecycle requests. The [local Hermes smoke test](docs/evidence/local-hermes/README.md) verified native preset discovery, child launch and a successful review result. It did not independently observe the effective provider model or effort. Production gateway deployment remains untested; no production gateway was changed.

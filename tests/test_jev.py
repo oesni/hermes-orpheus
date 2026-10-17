@@ -15,3 +15,12 @@ class JevTests(unittest.TestCase):
     def test_invalid_distribution(self):
         answer=self.answer(); answer['answers']['selection']['probabilities']['a']=float('nan')
         with self.assertRaises(SelectionError): JevClient.validate(answer,{'a':'a','b':'b'})
+
+    def test_non_string_choice_rejected(self):
+        for choice in ([], {}, None, 1):
+            with self.subTest(choice=choice):
+                answer = self.answer()
+                answer['answers']['selection']['choice'] = choice
+                with self.assertRaises(SelectionError) as error:
+                    JevClient.validate(answer, {'a': 'a', 'b': 'b'})
+                self.assertEqual(error.exception.code, 'invalid_response')

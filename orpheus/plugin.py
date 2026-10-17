@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 from .config import Registry, UniqueLoader
 from .host import SubagentAdapter, HostError
-from .deployment import validate_routes
+from .deployment import DEFAULT_JEV_ENDPOINT, validate_routes
 from .jev import JevClient
 from .resolver import Resolver
 
@@ -29,7 +29,8 @@ def register(ctx):
     registry = Registry.from_yaml(Path(config_path).read_text()) if config_path else Registry.from_dict(EMPTY_CONFIG)
     deployment = yaml.load(Path(deployment_path).read_text(), Loader=UniqueLoader) if deployment_path else {}
     validate_routes(registry, deployment)
-    resolver = Resolver(registry, JevClient(os.environ.get(deployment.get('jev_token_env', 'TYPESAFE_API_KEY'))))
+    resolver = Resolver(registry, JevClient(os.environ.get(deployment.get('jev_token_env', 'TYPESAFE_API_KEY')),
+                                           endpoint=deployment.get('jev_endpoint', DEFAULT_JEV_ENDPOINT)))
     adapter = SubagentAdapter(ctx.subagent_lifecycle, state_dir, deployment.get('subagent', {}), redact_literals=deployment.get('redact_literals', []))
     if callable(getattr(ctx, 'on_unload', None)):
         ctx.on_unload(adapter.close)

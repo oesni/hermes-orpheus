@@ -1,0 +1,187 @@
+{
+  "endpoint": "https://openrouter.ai/api/v1/systemone",
+  "requested_model": "typesafe/jev-1.14",
+  "scope": "Real System One API plus production Resolver; synthetic task model inventory; no child execution or native effort application.",
+  "observed_provider_model": [
+    "typesafe/jev-1.14-20261014"
+  ],
+  "cases": [
+    {
+      "case_id": "simple-review",
+      "expected": {
+        "preset_id": "reviewer",
+        "tuple_id": "quick"
+      },
+      "selected": {
+        "preset_id": "reviewer",
+        "tuple_id": "quick",
+        "model": "small-fast-model",
+        "effort": "low"
+      },
+      "passed": true,
+      "calls": [
+        {
+          "requested_model": "typesafe/jev-1.14",
+          "candidate_ids": [
+            "reviewer",
+            "writer"
+          ],
+          "projection_fields": [
+            "task.text"
+          ],
+          "http_status": 200,
+          "response_model": "typesafe/jev-1.14-20261014",
+          "choice": "reviewer",
+          "confidence": 1
+        },
+        {
+          "requested_model": "typesafe/jev-1.14",
+          "candidate_ids": [
+            "deep",
+            "quick"
+          ],
+          "projection_fields": [
+            "task.text"
+          ],
+          "http_status": 200,
+          "response_model": "typesafe/jev-1.14-20261014",
+          "choice": "quick",
+          "confidence": 0.94
+        }
+      ]
+    },
+    {
+      "case_id": "complex-review",
+      "expected": {
+        "preset_id": "reviewer",
+        "tuple_id": "deep"
+      },
+      "selected": {
+        "preset_id": "reviewer",
+        "tuple_id": "deep",
+        "model": "large-reasoning-model",
+        "effort": "high"
+      },
+      "passed": true,
+      "calls": [
+        {
+          "requested_model": "typesafe/jev-1.14",
+          "candidate_ids": [
+            "reviewer",
+            "writer"
+          ],
+          "projection_fields": [
+            "task.text"
+          ],
+          "http_status": 200,
+          "response_model": "typesafe/jev-1.14-20261014",
+          "choice": "reviewer",
+          "confidence": 1
+        },
+        {
+          "requested_model": "typesafe/jev-1.14",
+          "candidate_ids": [
+            "deep",
+            "quick"
+          ],
+          "projection_fields": [
+            "task.text"
+          ],
+          "http_status": 200,
+          "response_model": "typesafe/jev-1.14-20261014",
+          "choice": "deep",
+          "confidence": 1
+        }
+      ]
+    },
+    {
+      "case_id": "simple-docs",
+      "expected": {
+        "preset_id": "writer",
+        "tuple_id": "quick"
+      },
+      "selected": {
+        "preset_id": "writer",
+        "tuple_id": "quick",
+        "model": "small-fast-model",
+        "effort": "low"
+      },
+      "passed": true,
+      "calls": [
+        {
+          "requested_model": "typesafe/jev-1.14",
+          "candidate_ids": [
+            "reviewer",
+            "writer"
+          ],
+          "projection_fields": [
+            "task.text"
+          ],
+          "http_status": 200,
+          "response_model": "typesafe/jev-1.14-20261014",
+          "choice": "writer",
+          "confidence": 1
+        },
+        {
+          "requested_model": "typesafe/jev-1.14",
+          "candidate_ids": [
+            "deep",
+            "quick"
+          ],
+          "projection_fields": [
+            "task.text"
+          ],
+          "http_status": 200,
+          "response_model": "typesafe/jev-1.14-20261014",
+          "choice": "quick",
+          "confidence": 0.98
+        }
+      ]
+    },
+    {
+      "case_id": "complex-docs",
+      "expected": {
+        "preset_id": "writer",
+        "tuple_id": "deep"
+      },
+      "selected": {
+        "preset_id": "writer",
+        "tuple_id": "deep",
+        "model": "large-reasoning-model",
+        "effort": "high"
+      },
+      "passed": true,
+      "calls": [
+        {
+          "requested_model": "typesafe/jev-1.14",
+          "candidate_ids": [
+            "reviewer",
+            "writer"
+          ],
+          "projection_fields": [
+            "task.text"
+          ],
+          "http_status": 200,
+          "response_model": "typesafe/jev-1.14-20261014",
+          "choice": "writer",
+          "confidence": 1
+        },
+        {
+          "requested_model": "typesafe/jev-1.14",
+          "candidate_ids": [
+            "deep",
+            "quick"
+          ],
+          "projection_fields": [
+            "task.text"
+          ],
+          "http_status": 200,
+          "response_model": "typesafe/jev-1.14-20261014",
+          "choice": "deep",
+          "confidence": 1
+        }
+      ]
+    }
+  ],
+  "passed": true
+}
