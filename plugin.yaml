@@ -1,0 +1,23 @@
+manifest_version: 2
+name: hermes-orpheus
+version: 0.1.0
+kind: standalone
+description: Policy-bound presets for native Hermes subagents and webhook sessions.
+provides_tools:
+  - orpheus_presets
+  - orpheus_spawn
+  - orpheus_status
+  - orpheus_cancel
+python_dependencies:
+  - PyYAML>=6.0.2,<7
+  - aiohttp>=3.11,<4
+config_schema:
+  config_path:
+    type: string
+    description: Absolute path to the Orpheus preset registry YAML.
+  deployment_path:
+    type: string
+    description: Absolute path to the Orpheus deployment capability and ingress YAML.
+  state_dir:
+    type: string
+    description: Private directory for durable Orpheus run state.

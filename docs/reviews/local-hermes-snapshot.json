@@ -1,0 +1,19 @@
+{
+  "files_sha256": {
+    "__init__.py": "c3da00ac303457970bf1ea961246a5ad1a3b3aeef62da0764e9fde96cbb1d913",
+    "plugin.yaml": "7e6b9b60a5ef059f3d74b064f7c3338dd8d64e8d5759a98e6be4e54e0e553f3f",
+    "tests/test_directory_plugin.py": "20cb043a24412a862cc1a563314926964ebd0bc380d7bf1e32fb7c7b6c88aa83",
+    "README.md": "f88e3e0c34e4a4b829b300ab92ca1e551c7757f2a89e1f5fa9fc13111d7d9654",
+    "tests/live/README.md": "57557d8872098b67af60327baf14f735c9679dab5001eeb7ffe00e0d8383aa50",
+    "tests/live/discount_fixture.py": "17dca0a9ec437a044e3cf796d39c150c766142a13b2676725570c9eef95c9b06",
+    "tests/live/review_prompt.txt": "ed603e5f59e9703624e4ae22a4a601b20d547a173193c722c1d55e69db75a3f0",
+    "tests/live/test_verify_review_export.py": "e549efc963efab17f7805b39a7ce4c874719813d957212f15577dcfae3549318",
+    "tests/live/verify_review_export.py": "01ae904286f451cb03d11dea4222faff51d658f3a8d782f7181247d5100d51d1",
+    "docs/evidence/local-hermes/README.md": "a5ed025dab09aabb3a43346d3ae4480a803aa29d6d8e573366dd6a3dfb58ba5b",
+    "docs/evidence/local-hermes/receipt.json": "15973a50a96a66a4b4c62036fc6b6d575afd025b7c2e554ad820dc53684e8925"
+  },
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0
+}

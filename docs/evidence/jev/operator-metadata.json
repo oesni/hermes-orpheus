@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-17",
+  "probe_sha256": "b29196a16741100dc6631e2dd748e6464b63387f50562196378b8b5d2e451adc",
+  "tasks": {
+    "simple-review": "Review this trivial one-line arithmetic function for a single off-by-one bug.",
+    "complex-review": "Perform a complex code review of cross-service concurrency, transaction rollback, and race conditions across multiple modules.",
+    "simple-docs": "Write a short documentation paragraph explaining a simple hello-world function. No code review is needed.",
+    "complex-docs": "Write comprehensive architecture documentation for a complex distributed transaction system with subtle failure recovery and consensus interactions. This is documentation writing, not code review."
+  },
+  "final_probe_sha256": "05811d19547da78aeb89f2d3304754cc14bb7f9a74aff55c45c6e4605db9efa2",
+  "post_run_change": "Only credential CLI plumbing changed after this live run: generic OPENROUTER_API_KEY default and --token-env override. probe_sha256 remains the actually tested version; final_probe_sha256 identifies final source. Decision cases and API protocol unchanged; no live rerun.",
+  "receipt_file": "receipt.json",
+  "receipt_sha256": "4be5800818fb21f1db95195cc343fdc72d44194e7bbc04518205dfede33309db",
+  "receipt_provenance": "Byte-for-byte copy of original sanitized machine-generated probe output; not a raw HTTP response. Original probe did not record module hashes at execution time.",
+  "module_hash_scope": "No execution-time production-module hash manifest was captured. Exact module bytes loaded by the past execution are not cryptographically established."
+}

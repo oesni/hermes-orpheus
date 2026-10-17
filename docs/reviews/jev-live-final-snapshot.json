@@ -1,0 +1,41 @@
+{
+  "prior_review": "jev-live.md",
+  "base": "ef58ab17ce3bd42760cf0cafaf5493ba34d01324",
+  "files_sha256": {
+    "README.md": "bd71aec1fe67159282bd5c24621347009e7edaf96e751538220bfea56aa11421",
+    "examples/deployment.yaml": "1f9788bd4529e61bbbfff8f6353c7a830792cfab60f9cad667e8348f48156295",
+    "orpheus/deployment.py": "c6e1b7541e295899251d6b8f06ae07d7aeedf9d4896629b96ea4974227c06071",
+    "orpheus/jev.py": "4491e97fb8d8fd15e6c647f648b2b3cf2594e49334b56b7a077d778c5c604e11",
+    "orpheus/plugin.py": "e9a05e5ecd1959f28fdc72f69333b20e55cb793f784c2ee12779c7d1ffb2626f",
+    "tests/test_jev_endpoint.py": "31ddea9c3d336c77eb23281201958d7bda1f6c8ae7b5066314f6e13e1e1a6017",
+    "tests/live/jev_smoke.py": "05811d19547da78aeb89f2d3304754cc14bb7f9a74aff55c45c6e4605db9efa2",
+    "tests/live/test_jev_smoke.py": "db7b3030ef98bdf509ee5150cda3492e9e1646895e3f846503d3154358f0c19d",
+    "docs/evidence/jev/README.md": "7c5b835e773852329d81111ef1e3030a8ccbddc002d907d6f320129b8dab1968",
+    "docs/evidence/jev/receipt.json": "4be5800818fb21f1db95195cc343fdc72d44194e7bbc04518205dfede33309db",
+    "docs/evidence/jev/registry.json": "07fbf3e71b9a16e7a721eb205463de673f4b7c024d46a7b2e6ad1f03b29b200d",
+    "orpheus/resolver.py": "6b019a6ebd8ffc5c929225ade4b6d0f03fc4579786641b7480a84e8a14afd5da",
+    "tests/test_jev.py": "86151e648f2d35635b455fc5fad4240ef91adc3299dc832a9f1710078864a322",
+    "docs/evidence/jev/operator-metadata.json": "06865e4f15ee240005fdd0aa6b7a2355fb0e8b8842f1228090472aed517e84ee"
+  },
+  "changed_since_prior_review": [
+    "README.md",
+    "orpheus/deployment.py",
+    "orpheus/jev.py",
+    "tests/test_jev_endpoint.py",
+    "docs/evidence/jev/README.md",
+    "docs/evidence/jev/receipt.json",
+    "tests/test_jev.py",
+    "docs/evidence/jev/operator-metadata.json"
+  ],
+  "validation": "113 passed, 57 subtests passed; uv build wheel and sdist passed",
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0,
+  "post_review_wording_only": {
+    "docs/evidence/jev/README.md": {
+      "sha256": "5860a7c6d301885fb1c0f864ffea6c8789a63844d1a3cba8868321f1faf820e7",
+      "change": "Applied reviewer-requested operator attribution to two provenance statements; no code/evidence changes."
+    }
+  }
+}

@@ -1,0 +1,18 @@
+# Operator-controlled settings, separate from task/preset data. No secrets here.
+# Empty verified settings intentionally prevents launch until deployment tests pass.
+# Native verified_settings entries contain only provider/model, never effort.
+# Omitted native effort inherits the host setting; it is not dynamically overridden.
+subagent:
+  fallback_disabled: false
+  verified_settings: []
+  allowed_toolsets: []
+redact_literals: []
+auth_profiles: {}
+targets: {}
+operators: {}
+jev_token_env: TYPESAFE_API_KEY
+# Full HTTPS URL; secrets belong only in the environment named above.
+jev_endpoint: https://api.typesafe.ai/v1/systemone
+# For System One through OpenRouter, replace both settings above with:
+# jev_token_env: OPENROUTER_API_KEY
+# jev_endpoint: https://openrouter.ai/api/v1/systemone

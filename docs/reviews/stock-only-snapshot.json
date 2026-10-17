@@ -1,0 +1,24 @@
+{
+  "files_sha256": {
+    "orpheus/host.py": "dc72a8d77b0bb96ab2c85360119bf38ae89e9c9d4c8f66f2a5dca71f3c520c81",
+    "orpheus/deployment.py": "1f4950724b2fed7c7d61b8e8231bec9d8a93f317b14f254fb90de32d37bfa53b",
+    "orpheus/plugin.py": "e0ec290684b3ae1c47b36c230aa6c8056c96f8161b5b9310b5ef3eaf9c5244c6",
+    "orpheus/config.py": "00a95ac25a697f3e87ab684d1fb58bc1d225908cffab1abf172653f331b65cb1",
+    "orpheus/resolver.py": "6b019a6ebd8ffc5c929225ade4b6d0f03fc4579786641b7480a84e8a14afd5da",
+    "tests/test_host.py": "6f84ab523a2629a7daa544174928a2ca399b467d8269fc78e945892998717b6a",
+    "tests/test_plugin.py": "bc58891400a998f797ce79fb1022070de497c80d429032c4a1b805ec071a298a",
+    "tests/test_integration.py": "1b57fd1665e4eb481f0bdb9a8500ba6404fc6fbcc7ed34c6f5a409342ecc28b7",
+    "examples/presets.yaml": "4673060ee9f3d7280f580aeb7eadf14d7bffdde3cc98bc4bdc99a7c47072299d",
+    "examples/deployment.yaml": "c7047c13be48c0f0fe02b6cbeb92b4742cb4e5d2684f8e750e159788cc9caba0",
+    "examples/webhook-presets.yaml": "5181497944ec1390e943dd51e67354ae8b4aafc136c9da26741c681b914cd1df",
+    "README.md": "e1bb6b70d6355aaf7a00a1bac51f337c56cd68992c09df2210e6380724df1d38",
+    "docs/implementation.md": "012f4ddf15b6b18a9a4847238aed46bc5750fad7ffafb2876ba82289cbf6cdef",
+    ".github/workflows/ci.yml": "d81048d2f1cc00fa95d0d7c4532c90e7b0f2ebbb4b18675fcfbccd3c6103cf51"
+  },
+  "diff_sha256": "df76bff5a6f0af5af0bf58fb9eeeabcb3db8929fc0ddbee1116ffda02b00ee68",
+  "base": "6b83fd0ba1aba1e51d97222b478831e32ff1f500",
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0
+}

@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "inventory": {
+    "models": {
+      "small": {
+        "provider": "synthetic",
+        "model": "small-fast-model",
+        "efforts": [
+          "low"
+        ]
+      },
+      "large": {
+        "provider": "synthetic",
+        "model": "large-reasoning-model",
+        "efforts": [
+          "high"
+        ]
+      }
+    }
+  },
+  "presets": [
+    {
+      "id": "reviewer",
+      "purpose": "Review source code for correctness defects and bugs. Do not write documentation.",
+      "guidance": "Simple short tasks use small model with low effort (quick). Complex tasks requiring deep reasoning use large model with high effort (deep).",
+      "fields": {
+        "model": {
+          "mode": "enum",
+          "candidates": [
+            "small",
+            "large"
+          ]
+        },
+        "effort": {
+          "mode": "enum",
+          "candidates": [
+            "low",
+            "high"
+          ]
+        }
+      },
+      "compatible_settings": {
+        "quick": {
+          "model": "small",
+          "effort": "low"
+        },
+        "deep": {
+          "model": "large",
+          "effort": "high"
+        }
+      }
+    },
+    {
+      "id": "writer",
+      "purpose": "Write documentation, tutorials and architecture explanations. Do not perform code review.",
+      "guidance": "Simple short tasks use small model with low effort (quick). Complex tasks requiring deep reasoning use large model with high effort (deep).",
+      "fields": {
+        "model": {
+          "mode": "enum",
+          "candidates": [
+            "small",
+            "large"
+          ]
+        },
+        "effort": {
+          "mode": "enum",
+          "candidates": [
+            "low",
+            "high"
+          ]
+        }
+      },
+      "compatible_settings": {
+        "quick": {
+          "model": "small",
+          "effort": "low"
+        },
+        "deep": {
+          "model": "large",
+          "effort": "high"
+        }
+      }
+    }
+  ],
+  "subagent_policy": "jev-smoke",
+  "policies": {
+    "jev-smoke": {
+      "entrypoint": "subagent",
+      "input_schema": {
+        "task.text": {
+          "type": "string",
+          "max_length": 2000,
+          "required": true,
+          "trust": "payload"
+        }
+      },
+      "preset_selector": {
+        "id": "preset-choice",
+        "kind": "jev",
+        "model": "typesafe/jev-1.14",
+        "projection_fields": [
+          "task.text"
+        ],
+        "required_fields": [
+          "task.text"
+        ],
+        "timeout": 20,
+        "retries": 0
+      },
+      "field_resolver": {
+        "id": "settings-choice",
+        "kind": "jev",
+        "model": "typesafe/jev-1.14",
+        "projection_fields": [
+          "task.text"
+        ],
+        "required_fields": [
+          "task.text"
+        ],
+        "timeout": 20,
+        "retries": 0
+      }
+    }
+  }
+}

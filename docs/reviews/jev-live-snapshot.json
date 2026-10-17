@@ -1,0 +1,22 @@
+{
+  "base": "ef58ab17ce3bd42760cf0cafaf5493ba34d01324",
+  "files_sha256": {
+    "README.md": "4802c91a8a5eebb5b9183a5d7057e505e3e9a4eb3bf04687e06287d13d359cbd",
+    "examples/deployment.yaml": "1f9788bd4529e61bbbfff8f6353c7a830792cfab60f9cad667e8348f48156295",
+    "orpheus/deployment.py": "884bab9ac2d013b77669bbab1be5fc1a8d7f70901e39bc72c8fe047833492a6b",
+    "orpheus/jev.py": "2f6439e810f4e3f7a8552e670450905638b053a4936040cced13f3de6212d263",
+    "orpheus/plugin.py": "e9a05e5ecd1959f28fdc72f69333b20e55cb793f784c2ee12779c7d1ffb2626f",
+    "tests/test_jev_endpoint.py": "264ed25ef274ae3d8ff7162f0be37cd3ffaf33bb32a27dc8e295c614e19e92a9",
+    "tests/live/jev_smoke.py": "05811d19547da78aeb89f2d3304754cc14bb7f9a74aff55c45c6e4605db9efa2",
+    "tests/live/test_jev_smoke.py": "db7b3030ef98bdf509ee5150cda3492e9e1646895e3f846503d3154358f0c19d",
+    "docs/evidence/jev/README.md": "08337a2345b09e4e2dbf56be33c511c0622b0c334b91afec543c7ab426a4d7d5",
+    "docs/evidence/jev/receipt.json": "f944ae2d331e60c428a126f06eff4960ab7c43b66584a95c49f0b8da4868e5f4",
+    "docs/evidence/jev/registry.json": "07fbf3e71b9a16e7a721eb205463de673f4b7c024d46a7b2e6ad1f03b29b200d",
+    "orpheus/resolver.py": "6b019a6ebd8ffc5c929225ade4b6d0f03fc4579786641b7480a84e8a14afd5da",
+    "tests/test_jev.py": "43f7a520c1b093318e5c0ce64c1991e17def641e9846b0b0cfc9c776c0f8f1fd"
+  },
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0
+}
