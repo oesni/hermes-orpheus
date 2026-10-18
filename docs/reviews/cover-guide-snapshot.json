@@ -1,0 +1,28 @@
+{
+  "files_sha256": {
+    "README.md": "900bab148da5d8f9313de4a3f90eb3aba39f786c898b6827694fe880009a56a9",
+    "docs/installation.md": "aaf9277ce725f9ce075f6006622be9b42c499b2ad6ca51831e9b5b430b44d4b1",
+    "docs/configuration-guide.md": "96aec61a2262dd380ba1bde94cec8f11216b3ccc83a43c616b10452ef4631548",
+    "orpheus/config.py": "d0cf4970c2eb1e51c809764a7b495da44691d3046d813febe53e7a6455e7af61",
+    "orpheus/resolver.py": "264a07fafc17c33c896205a2dfa00919c5111c947f9b504a5948cb92e6cf5239",
+    "orpheus/deployment.py": "b4548a0f4538a0cb6196e8c388e95c92ec01f2327bbbcc6fd710fc084312354e",
+    "orpheus/host.py": "dc72a8d77b0bb96ab2c85360119bf38ae89e9c9d4c8f66f2a5dca71f3c520c81",
+    "orpheus/plugin.py": "7e897a9be57cb175ff543562c9bb97748893ef190eb6da1a452f359896b7e8a4",
+    "orpheus/cli.py": "9e8e640330d1aa94288f8b9be2e54cf2375089f1b7d36b73a764054b42e2edf9",
+    "orpheus/systemone.py": "443acbac90757b8a900c3354e7a832e15018eaf8111c4f7aaa7386037888272e",
+    "examples/presets.yaml": "4673060ee9f3d7280f580aeb7eadf14d7bffdde3cc98bc4bdc99a7c47072299d",
+    "examples/deployment.yaml": "1c3e5f8908fb9a0996f993af18f7339456b0db17ba78a346bdc6699163e9c37b",
+    "examples/webhook-presets.yaml": "5181497944ec1390e943dd51e67354ae8b4aafc136c9da26741c681b914cd1df",
+    "examples/webhook-deployment.yaml": "76d116920983bf1a91436ff28150e7e04612eefc91128933573f7bd195c0e150",
+    "examples/systemone-presets.yaml": "e38b6d56302580dfc01748af630087e0c320996ee550d9dcb7aaa431cce1e02f",
+    "plugin.yaml": "7e6b9b60a5ef059f3d74b064f7c3338dd8d64e8d5759a98e6be4e54e0e553f3f",
+    "assets/hermes-orpheus-cover.png": "e5d8d0509d8727da139bbed097520b00848a0d043568fca4b4988a2db58383bf"
+  },
+  "requested_model": "claude-opus-5-5",
+  "requested_effort": "high",
+  "validation": "35 relative targets, 6 CLI checks, 2 context variants, 2 guide fragments PASS",
+  "reported_models": [
+    "claude-opus-5-5"
+  ],
+  "exit_code": 0
+}

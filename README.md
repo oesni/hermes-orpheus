@@ -1,15 +1,66 @@
-# hermes-orpheus
+<p align="center">
+  <img src="assets/hermes-orpheus-cover.png" alt="Hermes Orpheus — three overlapping Hermes portraits in textured ink and navy glitch effects" width="100%">
+</p>
 
-Execution presets for Hermes native subagents and webhook-created sessions. This implementation uses the original reviewed `inventory → fields → compatible_settings → policies` interface. Hermes core modifications are not required or shipped. Native presets select models and retain the host's existing effort behavior; webhook presets may select both models and effort through the public Run API.
+# Hermes Orpheus
 
-- [Requirements](docs/spec/subagent-presets.md)
-- [Design](docs/design.md)
-- [Implementation status and limits](docs/implementation.md)
-- [Design and implementation reviews](docs/reviews/README.md)
+**Give Hermes reusable specialists for the task at hand.** Define execution presets once, then use them to launch native subagents or start sessions from webhooks—without modifying Hermes core.
 
-## Local development and configuration inspection
+[Get started](#get-started) · [Write a configuration](docs/configuration-guide.md) · [Examples](examples/) · [How it works](docs/implementation.md)
 
-Requires Python 3.11+ and uv.
+## What you get
+
+- **Reusable presets.** Group a role's instructions, model choices, and toolsets in one configuration.
+- **Controlled selection.** Let a parent agent choose, use deterministic rules, or route finite choices through the System One API, including Jev through OpenRouter.
+- **Two entrypoints.** Delegate work inside a conversation, or select a preset before creating a fresh webhook session.
+- **Trackable runs.** Discover presets, launch children, retrieve results, and request cancellation. Duplicate webhook bodies reuse their original request.
+
+| | Native subagent | Webhook session |
+| --- | --- | --- |
+| Who chooses | Fixed configuration, parent agent, rules, or System One | Fixed configuration, rules, or System One |
+| Model | From operator-authorized choices | From target-authorized choices |
+| Effort | Inherits Hermes settings; explicit overrides are rejected | May be selected when the target supports it |
+
+Presets describe allowed choices; deployment settings authorize where they can run. Selections must resolve to one allowed combination before launch.
+
+## Get started
+
+1. **Install** using the [Hermes directory-plugin instructions](docs/installation.md#install-the-plugin).
+2. **Configure** your models and presets with the [configuration authoring guide](docs/configuration-guide.md). You can give that guide to your agent to prepare the YAML for you.
+3. **Enable and verify** the plugin, then start a new Hermes session with the `orpheus` toolset available:
+
+   ```sh
+   hermes plugins enable hermes-orpheus
+   hermes plugins doctor hermes-orpheus --ci
+   ```
+
+To have an agent prepare the configuration, give it this request:
+
+> Read `docs/configuration-guide.md` and prepare preset and deployment YAML for my use case. Validate the files and report any settings that still require operator verification.
+
+The [starter preset](examples/presets.yaml) offers an `analyst` role with two model choices. Its model names are placeholders, and the [deployment example](examples/deployment.yaml) deliberately blocks execution until you verify and authorize your real provider/model pairs.
+
+After configuring a compatible preset, ask Hermes:
+
+> Discover the available Orpheus presets, choose one suited to this task, and delegate the work. Return the child's result when it finishes.
+
+The native tool flow is `orpheus_presets` → `orpheus_spawn` → `orpheus_status`. Use `orpheus_cancel` to request cancellation.
+
+## Configuration paths
+
+| Start here | Use it for |
+| --- | --- |
+| [Agent-ready configuration guide](docs/configuration-guide.md) | Write and validate presets and deployment settings |
+| [Native subagent example](examples/presets.yaml) | Let the parent choose a preset and model |
+| [System One example](examples/systemone-presets.yaml) | Let System One select a compatible model tuple |
+| [Webhook examples](examples/webhook-presets.yaml) | Bind routes to preset selection policies |
+| [Installation and operation](docs/installation.md) | Plugin setup, endpoint configuration, and runtime details |
+
+Secrets stay outside preset files and Git. Configuration references credential environment variable names, never their values. Native subagents do not support per-child effort or maximum-turn overrides in this release. See [implementation limits](docs/implementation.md) before enabling a deployment.
+
+## Development
+
+Python 3.11+ and [uv](https://docs.astral.sh/uv/) are required for local development.
 
 ```sh
 uv sync
@@ -19,117 +70,6 @@ uv run pytest -q
 uv build
 ```
 
-`validate` checks configuration structure and quarantined definitions, not provider connectivity. `inspect` expands inventory references into concrete provider/model/effort tuples. No LLM or System One request is made by either command.
+The `orpheus` console command and `python -m orpheus.cli` invoke the same CLI. `validate` checks configuration structure; `inspect` expands model references. Neither sends a model request or proves provider connectivity.
 
-## Install in a Hermes environment
-
-For a managed Hermes installation, use its native directory-plugin loader. For an initial installation, run the following from the Orpheus repository root. It refuses an existing destination so copying cannot leave stale modules from an earlier version:
-
-```sh
-(
-  orpheus_plugin_dir="${HERMES_HOME:-$HOME/.hermes}/plugins/hermes-orpheus"
-  if [ -e "$orpheus_plugin_dir" ] || [ -L "$orpheus_plugin_dir" ]; then
-    printf '%s\n' 'Orpheus already exists; this recipe is for a fresh installation only.' >&2
-    exit 1
-  fi
-  mkdir -p "$orpheus_plugin_dir" &&
-    cp plugin.yaml __init__.py "$orpheus_plugin_dir/" &&
-    cp -R orpheus "$orpheus_plugin_dir/"
-)
-```
-
-Use the selected profile's actual `HERMES_HOME` when installing into a named profile. The manifest declares `PyYAML>=6.0.2,<7` and `aiohttp>=3.11,<4`. On the verified managed Hermes CLI, `hermes plugins enable` resolves and installs declared dependencies through Hermes's package manager as part of activation. Manifest parsing alone only validates the declarations. Let Hermes manage these dependencies; do not manually run pip against its managed runtime. The directory entry point imports its bundled package within Hermes's plugin namespace.
-
-For a conventional Python environment that you manage, installing the package into the same environment that runs Hermes is an alternative:
-
-```sh
-uv pip install --python /path/to/hermes/.venv/bin/python /path/to/hermes-orpheus
-```
-
-This alternative exposes the public `hermes_agent.plugins` entry point. Choose one installation method for a profile to avoid duplicate plugin discovery.
-
-For either method, configure the following in the active Hermes profile's configuration, using your own absolute paths, then enable the plugin with `hermes plugins enable hermes-orpheus` (use `hermes -p PROFILE plugins enable hermes-orpheus` for a named profile):
-
-```yaml
-plugins:
-  entries:
-    hermes-orpheus:
-      enabled: true
-      settings:
-        config_path: /path/to/presets.yaml
-        deployment_path: /path/to/deployment.yaml
-        state_dir: /path/to/private/orpheus-state
-```
-
-Equivalent fallback environment variables are `ORPHEUS_CONFIG`, `ORPHEUS_DEPLOYMENT`, and `ORPHEUS_STATE_DIR`. Reload the plugin or restart the host after configuration changes; no live file watcher is installed. State defaults to `$HERMES_HOME/orpheus` (or `~/.hermes/orpheus`). Loading the plugin never launches work. With no preset configuration it registers discovery tools with an empty registry.
-
-The [preset example](examples/presets.yaml) uses the original interface. The [deployment example](examples/deployment.yaml) intentionally denies execution until an operator verifies the exact native provider/model settings. Credentials are referenced through environment variable names; do not place tokens in preset definitions.
-
-## Subagents
-
-The tools are `orpheus_presets`, `orpheus_spawn`, `orpheus_status`, and `orpheus_cancel`. The existing parent may propose a preset and dynamic values only when its administrator-bound policy permits it. Rules/System One policies reject parent overrides.
-
-For the included preset, the parent can request:
-
-```json
-{"task":"Analyze this problem","preset_id":"analyst","proposals":{"model":"large"}}
-```
-
-The selected model reference `large` resolves to the preset's matching model tuple. Missing or ambiguous choices fail before launch. Tool access cannot exceed the verified deployment scope.
-
-**Native subagent effort overrides are outside this release.** Omit `effort` from native preset fields and compatible tuples. The adapter rejects every explicit effort, including on hosts advertising an extension, and never sends `reasoning_effort` or per-launch `disable_fallback`. The host's existing reasoning configuration applies. Operators must verify provider fallback is disabled in the host configuration and authorize exact `{provider, model}` pairs. Per-child maximum turns and upstream patches are also outside scope. Presets declaring effort remain usable for compatible webhook routes.
-
-## Webhooks
-
-Enable the Hermes API-server platform and register the plugin. Orpheus mounts `/orpheus/webhooks/{route_id}` and operator status/cancel/reconcile endpoints on that application. This does not modify native `/webhooks/...` routes. Use rules or System One for every preset/model/effort choice before calling authenticated `POST /v1/runs` to create a fresh session.
-
-Ingress supports SHA-256 HMAC over raw JSON body bytes, replay detection through durable body digests independent of unsigned delivery headers, typed body extraction and preselection filters. Receipts must be explicitly disabled in this initial implementation. Authentication, API target and operator credentials are separate; operator calls need a Bearer credential scoped to the route's stable security scope. Start from [webhook presets](examples/webhook-presets.yaml) and [webhook deployment](examples/webhook-deployment.yaml). See the implementation notes for supported configuration and limitations.
-
-Use `kind: systemone` for System One Choice API routing in `preset_selector`,
-`field_resolver`, and referenced `resolver_nodes`. The `model` remains an endpoint-supported
-model identifier; the resolver kind names the protocol, not a particular model.
-The complete [System One example](examples/systemone-presets.yaml) lets the parent
-choose a preset and System One choose its model tuple:
-
-```yaml
-field_resolver:
-  id: fields
-  kind: systemone
-  model: typesafe/jev-1.14
-  projection_fields: [task.text]
-```
-
-The deprecated `kind: jev` spelling remains a compatibility alias. Both spellings
-use the same validation, projections, finite choices, retries, and fallback rules.
-Compiled policies normalize the alias to `systemone`; source snapshots and revision
-hashes retain the original configuration. Canonical `systemone_endpoint` and `systemone_token_env`
-deployment keys replace the deprecated `jev_endpoint` and `jev_token_env` aliases.
-Equal old/new duplicates are accepted; conflicting values fail validation without exposing
-the values. A custom endpoint still requires an explicit credential variable binding.
-Model identifiers such as `typesafe/jev-1.14` are unchanged.
-Python integrations use `orpheus.systemone.SystemOneClient`, `systemone_client`,
-`DEFAULT_SYSTEMONE_ENDPOINT`, and `validate_systemone_endpoint`; the old Python names
-remain compatibility aliases.
-
-Diagnostic codes intentionally use the new protocol name, including for legacy input:
-`invalid_jev_endpoint` → `invalid_systemone_endpoint`,
-`jev_endpoint_requires_token_env` → `systemone_endpoint_requires_token_env`, and
-`invalid_jev_token_env` → `invalid_systemone_token_env`. Integrations matching these
-codes must update their checks; the old diagnostic strings are not aliases.
-
-The System One client uses `TYPESAFE_API_KEY` and `https://api.typesafe.ai/v1/systemone` by default. Configure the full endpoint and credential environment variable in the operator deployment file. For OpenRouter System One:
-
-```yaml
-systemone_endpoint: https://openrouter.ai/api/v1/systemone
-systemone_token_env: OPENROUTER_API_KEY
-```
-
-The policy's `model` must be an identifier supported by that endpoint, such as `typesafe/jev-1.14`. Use your existing environment variable name if different; store its value outside the repository. A custom endpoint requires an explicit `systemone_token_env`, so changing the host cannot silently reuse the default credential variable. Legacy token-only overrides retain the default Typesafe endpoint. Only HTTPS endpoints without embedded credentials, query strings, or fragments are accepted, and redirects are disabled.
-
-The System One client receives only configured context projections and finite choices. Webhook routing never invokes a parent/selector LLM or falls back to one. The [live Jev smoke test](docs/evidence/jev/README.md) verified resolver-only preset and compatible model/effort tuple selection through the subagent entrypoint against OpenRouter System One. Task model identifiers are synthetic; no downstream task model was launched. The default Typesafe endpoint was not tested live, and native subagent execution still rejects explicit effort.
-
-## Execution guarantees and verification scope
-
-Launch intent and selections are persisted before submission. Duplicate webhook bodies reuse the original record. Ambiguous submissions remain `unknown` and are not automatically resubmitted; restart or polling cannot create replacement runs. Native ownership is checked through the public lifecycle before status/cancel access, and internal capability tokens are not returned to callers.
-
-Tests cover actual Orpheus registry/resolver/plugin wiring, a local HTTP server representing the public Hermes run API, and stock-shaped native lifecycle requests. The [local Hermes smoke test](docs/evidence/local-hermes/README.md) verified native preset discovery, child launch and a successful review result. It did not independently observe the effective provider model or effort. Production gateway deployment remains untested; no production gateway was changed.
+[Design](docs/design.md) · [Requirements](docs/spec/subagent-presets.md) · [Review records](docs/reviews/README.md) · [Local Hermes test](docs/evidence/local-hermes/README.md)
