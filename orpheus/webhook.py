@@ -188,7 +188,9 @@ class WebhookService:
                 resolver=self.resolver
                 if row['registry_snapshot']!=self.config:
                     registry=type(self.registry).from_dict(row['registry_snapshot'])
-                    resolver=type(self.resolver)(registry,jev_client=getattr(self.resolver,'jev_client',None))
+                    client=getattr(self.resolver,'systemone_client',getattr(self.resolver,'jev_client',None))
+                    # Positional injection supports both old and new parameter names.
+                    resolver=type(self.resolver)(registry,client)
                 selection=await asyncio.wait_for(resolver.resolve('webhook',row['task'],context=row['context'],route_id=row['route_id']),45)
                 self.host.preflight(selection,row['target'])
                 if not self.ledger.change(rid,generation,('resolving',),'selected',selection=selection): return

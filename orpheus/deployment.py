@@ -5,7 +5,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 
-DEFAULT_JEV_ENDPOINT = "https://api.typesafe.ai/v1/systemone"
+DEFAULT_SYSTEMONE_ENDPOINT = "https://api.typesafe.ai/v1/systemone"
 
 
 class DeploymentError(ValueError):
@@ -15,7 +15,7 @@ class DeploymentError(ValueError):
         self.code = code
 
 
-def validate_jev_endpoint(value):
+def validate_systemone_endpoint(value):
     """Accept a credential-free HTTPS endpoint without exposing invalid input."""
     try:
         if not isinstance(value, str) or not value or any(ord(char) <= 32 or ord(char) == 127 for char in value):
@@ -28,8 +28,31 @@ def validate_jev_endpoint(value):
         if parsed.port == 0:
             raise ValueError
     except ValueError:
-        raise DeploymentError('invalid_jev_endpoint') from None
+        raise DeploymentError('invalid_systemone_endpoint') from None
     return value
+
+
+# Deprecated Python aliases for existing integrations.
+DEFAULT_JEV_ENDPOINT = DEFAULT_SYSTEMONE_ENDPOINT
+validate_jev_endpoint = validate_systemone_endpoint
+
+
+def systemone_settings(value):
+    """Resolve canonical/legacy keys without silently overriding credentials."""
+    def select(suffix, default):
+        canonical, legacy = 'systemone_' + suffix, 'jev_' + suffix
+        if canonical in value and legacy in value:
+            if type(value[canonical]) is not type(value[legacy]) or value[canonical] != value[legacy]:
+                raise DeploymentError('conflicting_systemone_' + suffix)
+        return value.get(canonical, value.get(legacy, default))
+
+    endpoint = validate_systemone_endpoint(select('endpoint', DEFAULT_SYSTEMONE_ENDPOINT))
+    token_env = select('token_env', 'TYPESAFE_API_KEY')
+    if not isinstance(token_env, str) or not token_env:
+        raise DeploymentError('invalid_systemone_token_env')
+    if endpoint != DEFAULT_SYSTEMONE_ENDPOINT and not ({'systemone_token_env', 'jev_token_env'} & set(value)):
+        raise DeploymentError('systemone_endpoint_requires_token_env')
+    return endpoint, token_env
 
 
 def _mapping(value, allowed):
@@ -57,14 +80,10 @@ def validate_subagent(value):
 
 
 def validate_deployment(value):
-    _mapping(value, {'subagent', 'auth_profiles', 'targets', 'operators', 'redact_literals', 'jev_token_env', 'jev_endpoint'})
+    _mapping(value, {'subagent', 'auth_profiles', 'targets', 'operators', 'redact_literals', 'jev_token_env', 'jev_endpoint', 'systemone_token_env', 'systemone_endpoint'})
     validate_subagent(value.get('subagent', {}))
-    validate_jev_endpoint(value.get('jev_endpoint', DEFAULT_JEV_ENDPOINT))
-    if value.get('jev_endpoint', DEFAULT_JEV_ENDPOINT) != DEFAULT_JEV_ENDPOINT and 'jev_token_env' not in value:
-        raise DeploymentError('jev_endpoint_requires_token_env')
+    systemone_settings(value)
     _strings(value.get('redact_literals', []))
-    if 'jev_token_env' in value and (not isinstance(value['jev_token_env'], str) or not value['jev_token_env']):
-        raise DeploymentError('invalid_jev_token_env')
     for key in ('auth_profiles', 'targets', 'operators'):
         if not isinstance(value.get(key, {}), dict):
             raise DeploymentError('invalid_deployment_mapping')

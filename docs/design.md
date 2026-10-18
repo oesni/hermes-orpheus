@@ -17,7 +17,7 @@ The current release uses stock public APIs only. Native presets select model/pro
 | Registry compiler | Parse schema, reject duplicates/invalid definitions, compile rules, freeze candidate inventory and preset revisions. |
 | Resolver | Enforce entrypoint policy, select preset, resolve fields, validate compatible combinations, produce immutable selection records. |
 | Rule evaluator | Evaluate a restricted typed predicate tree; no Python, shell, templates with execution, or arbitrary expression evaluation. |
-| Jev client | Send an allowlisted context projection and finite Choice candidates; validate responses, timeout, confidence and configured fallbacks. |
+| System One client | Send an allowlisted context projection and finite Choice candidates; validate responses, timeout, confidence and configured fallbacks. |
 | Capability validator | Check provider/model/effort, authorization, tool bounds, adapter availability and runtime fallback constraints before launch. |
 | Subagent adapter | Submit supported values to `ctx.subagent_lifecycle.launch`; normalize native handles, results and cancellation. |
 | Webhook ingress | Authenticate/filter events, reserve durable delivery identity, invoke resolver, submit to authenticated public `/v1/runs`. |
@@ -130,9 +130,16 @@ Lower numeric priority wins. Priorities must be unique within a ruleset; configu
 
 Authenticated origin does not make arbitrary content authoritative. For example, `event.labels` may be permitted as routing data while carrying no authorization power. Principal/route allowlists are derived from verified ingress data and cannot be replaced by task text. Rule selection never grants tools or credentials.
 
-### Jev
+### System One resolver
 
-Jev uses TypeSafe's documented System One Choice API. Preset routing chooses a finite entrypoint-compatible preset ID; field resolution chooses a finite complete tuple ID. The tuple approach prevents independent model/effort questions from producing incompatible combinations. Opaque candidate IDs map back to the pinned registry, never to arbitrary response strings.
+Use `kind: systemone` in preset selectors, field resolvers, and referenced resolver nodes.
+The deprecated `kind: jev` alias is accepted and normalized in compiled policies.
+Source snapshots and revision hashes retain the operator-supplied spelling.
+The deployment keys `systemone_endpoint` and `systemone_token_env` are canonical;
+`jev_endpoint` and `jev_token_env` remain compatibility aliases. Model IDs remain unchanged.
+The kind identifies the Choice API protocol rather than a model.
+
+The System One client uses the Choice API. Preset routing chooses a finite entrypoint-compatible preset ID; field resolution chooses a finite complete tuple ID. The tuple approach prevents independent model/effort questions from producing incompatible combinations. Opaque candidate IDs map back to the pinned registry, never to arbitrary response strings.
 
 Effective Jev projection is the intersection of policy `projection_fields`, route `routing_fields` plus `task_fields` (or administrator-approved subagent context fields), and the typed extraction schema. Fields excluded by any layer are never sent, and required-but-excluded fields make that policy incompatible. At most 255 candidates are submitted per Choice. Exceeding that bound is a configuration error in the initial design; future explicit shortlisting must preserve an auditable candidate set. Do not truncate silently. A policy pins its Jev model and defines permitted projection fields, timeout, optional minimum confidence and bounded retry budget. No universal confidence threshold is assumed. Candidate guidance and task text remain data, not instructions to widen the candidate set.
 
