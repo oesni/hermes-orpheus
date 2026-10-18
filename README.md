@@ -102,19 +102,25 @@ field_resolver:
 The deprecated `kind: jev` spelling remains a compatibility alias. Both spellings
 use the same validation, projections, finite choices, retries, and fallback rules.
 Compiled policies normalize the alias to `systemone`; source snapshots and revision
-hashes retain the original configuration. Existing `jev_endpoint` and `jev_token_env`
-deployment keys are unchanged, as are model identifiers such as `typesafe/jev-1.14`.
+hashes retain the original configuration. Canonical `systemone_endpoint` and `systemone_token_env`
+deployment keys replace the deprecated `jev_endpoint` and `jev_token_env` aliases.
+Equal old/new duplicates are accepted; conflicting values fail validation without exposing
+the values. A custom endpoint still requires an explicit credential variable binding.
+Model identifiers such as `typesafe/jev-1.14` are unchanged.
+Python integrations use `orpheus.systemone.SystemOneClient`, `systemone_client`,
+`DEFAULT_SYSTEMONE_ENDPOINT`, and `validate_systemone_endpoint`; the old Python names
+remain compatibility aliases.
 
-Jev uses `TYPESAFE_API_KEY` and `https://api.typesafe.ai/v1/systemone` by default. Configure the full endpoint and credential environment variable in the operator deployment file. For OpenRouter System One:
+The System One client uses `TYPESAFE_API_KEY` and `https://api.typesafe.ai/v1/systemone` by default. Configure the full endpoint and credential environment variable in the operator deployment file. For OpenRouter System One:
 
 ```yaml
-jev_endpoint: https://openrouter.ai/api/v1/systemone
-jev_token_env: OPENROUTER_API_KEY
+systemone_endpoint: https://openrouter.ai/api/v1/systemone
+systemone_token_env: OPENROUTER_API_KEY
 ```
 
-The policy's `model` must be an identifier supported by that endpoint, such as `typesafe/jev-1.14`. Use your existing environment variable name if different; store its value outside the repository. A custom endpoint requires an explicit `jev_token_env`, so changing the host cannot silently reuse the default credential variable. Legacy token-only overrides retain the default Typesafe endpoint. Only HTTPS endpoints without embedded credentials, query strings, or fragments are accepted, and redirects are disabled.
+The policy's `model` must be an identifier supported by that endpoint, such as `typesafe/jev-1.14`. Use your existing environment variable name if different; store its value outside the repository. A custom endpoint requires an explicit `systemone_token_env`, so changing the host cannot silently reuse the default credential variable. Legacy token-only overrides retain the default Typesafe endpoint. Only HTTPS endpoints without embedded credentials, query strings, or fragments are accepted, and redirects are disabled.
 
-Jev receives only configured context projections and finite choices. Webhook routing never invokes a parent/selector LLM or falls back to one. The [live Jev smoke test](docs/evidence/jev/README.md) verified resolver-only preset and compatible model/effort tuple selection through the subagent entrypoint against OpenRouter System One. Task model identifiers are synthetic; no downstream task model was launched. The default Typesafe endpoint was not tested live, and native subagent execution still rejects explicit effort.
+The System One client receives only configured context projections and finite choices. Webhook routing never invokes a parent/selector LLM or falls back to one. The [live Jev smoke test](docs/evidence/jev/README.md) verified resolver-only preset and compatible model/effort tuple selection through the subagent entrypoint against OpenRouter System One. Task model identifiers are synthetic; no downstream task model was launched. The default Typesafe endpoint was not tested live, and native subagent execution still rejects explicit effort.
 
 ## Execution guarantees and verification scope
 

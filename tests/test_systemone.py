@@ -85,3 +85,50 @@ class SystemOneTests(unittest.IsolatedAsyncioTestCase):
             config['presets'] = [dict(copy.deepcopy(config['presets'][0]), id=f'p{i}') for i in range(256)]
             config['policies']['interactive']['preset_selector'] = choice(kind, 'p')
             self.assertIn('interactive', Registry.from_dict(config).unavailable_policies)
+
+
+class SystemOneDeploymentTests(unittest.TestCase):
+    def test_canonical_legacy_and_mixed_settings(self):
+        from orpheus.deployment import systemone_settings, validate_deployment
+        endpoint = 'https://systemone.example/choice'
+        for endpoint_key in ('systemone_endpoint', 'jev_endpoint'):
+            for token_key in ('systemone_token_env', 'jev_token_env'):
+                settings = {endpoint_key: endpoint, token_key: 'CUSTOM_KEY'}
+                validate_deployment(settings)
+                self.assertEqual(systemone_settings(settings), (endpoint, 'CUSTOM_KEY'))
+        settings = {'systemone_endpoint': endpoint, 'jev_endpoint': endpoint,
+                    'systemone_token_env': 'CUSTOM_KEY', 'jev_token_env': 'CUSTOM_KEY'}
+        validate_deployment(settings)
+        self.assertEqual(systemone_settings(settings), (endpoint, 'CUSTOM_KEY'))
+
+    def test_conflicts_and_invalid_bindings_reject_without_values(self):
+        from orpheus.deployment import DeploymentError, validate_deployment
+        for settings in (
+            {'systemone_endpoint': 'https://one.example', 'jev_endpoint': 'https://two.example'},
+            {'systemone_token_env': 'PRIVATE_A', 'jev_token_env': 'PRIVATE_B'},
+            {'systemone_endpoint': 'https://one.example'},
+            {'systemone_endpoint': 'https://one.example', 'jev_token_env': ''},
+            {'systemone_endpoint': 'http://one.example', 'systemone_token_env': 'KEY'},
+        ):
+            with self.subTest(settings=settings), self.assertRaises(DeploymentError) as error:
+                validate_deployment(settings)
+            for value in settings.values():
+                if value:
+                    self.assertNotIn(value, str(error.exception))
+
+    def test_python_compatibility_aliases_and_client_conflicts(self):
+        from orpheus.systemone import SystemOneClient
+        from orpheus.jev import JevClient
+        from orpheus.deployment import (DEFAULT_SYSTEMONE_ENDPOINT, DEFAULT_JEV_ENDPOINT,
+                                        validate_systemone_endpoint, validate_jev_endpoint)
+        self.assertIs(SystemOneClient, JevClient)
+        self.assertEqual(DEFAULT_SYSTEMONE_ENDPOINT, DEFAULT_JEV_ENDPOINT)
+        self.assertIs(validate_systemone_endpoint, validate_jev_endpoint)
+        client = object()
+        resolver = Resolver(Registry.from_dict(sample()), jev_client=client)
+        self.assertIs(resolver.systemone_client, client)
+        self.assertIs(resolver.jev_client, client)
+        resolver.jev_client = None
+        self.assertIsNone(resolver.systemone_client)
+        with self.assertRaisesRegex(ValueError, 'Conflicting'):
+            Resolver(Registry.from_dict(sample()), systemone_client=object(), jev_client=object())

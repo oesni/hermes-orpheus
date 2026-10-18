@@ -27,9 +27,20 @@ def matches(predicate, values):
 
 
 class Resolver:
-    def __init__(self, registry, jev_client=None):
+    def __init__(self, registry, systemone_client=None, *, jev_client=None):
         self.registry=registry
-        self.jev_client=jev_client
+        if systemone_client is not None and jev_client is not None and systemone_client is not jev_client:
+            raise ValueError('Conflicting System One clients')
+        self.systemone_client = systemone_client if systemone_client is not None else jev_client
+
+    @property
+    def jev_client(self):
+        """Deprecated compatibility alias for systemone_client."""
+        return self.systemone_client
+
+    @jev_client.setter
+    def jev_client(self, client):
+        self.systemone_client = client
 
     async def resolve(self, entrypoint, task, context=None, preset_id=None, proposals=None, route_id=None):
         registry=copy.deepcopy(self.registry)
@@ -114,7 +125,7 @@ class Resolver:
                             return await run(policy['resolver_nodes'][no['target']],stage)
                         else: raise SelectionError('No rule matched','no_match')
                 elif kind=='systemone':
-                    if self.jev_client is None: raise SelectionError('System One credentials unavailable','missing_credentials')
+                    if self.systemone_client is None: raise SelectionError('System One credentials unavailable','missing_credentials')
                     allowed=set(node.get('projection_fields',[])) & projection_scope
                     if set(node.get('required_fields',[]))-allowed or any(f not in values for f in node.get('required_fields',[])): raise SelectionError('Required System One projection excluded')
                     state={k:values[k] for k in sorted(allowed) if k in values}
@@ -132,7 +143,7 @@ class Resolver:
                     timeout=min(node.get('timeout',10),deadline-time.monotonic())
                     for attempt in range(node.get('retries',0)+1):
                         try:
-                            answer=await asyncio.wait_for(self.jev_client.choose(model=node['model'], state=state, choices=choices, timeout=timeout, min_confidence=node.get('min_confidence')),timeout)
+                            answer=await asyncio.wait_for(self.systemone_client.choose(model=node['model'], state=state, choices=choices, timeout=timeout, min_confidence=node.get('min_confidence')),timeout)
                             result=answer.get('choice') if isinstance(answer,dict) else answer
                             if node.get('min_confidence') is not None:
                                 confidence=answer.get('confidence') if isinstance(answer,dict) else None
