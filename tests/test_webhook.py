@@ -405,3 +405,31 @@ async def test_reconciler_does_not_steal_live_starting_owner(tmp_path,monkeypatc
     assert ledger.get(local['id'])['state']=='starting' and ledger.get(local['id'])['generation']==1
     blocker.cancel(); await asyncio.gather(blocker,return_exceptions=True)
     ledger.close()
+
+@async_test
+async def test_restart_rebuild_preserves_legacy_injected_client(tmp_path):
+    import copy
+    class Snapshot(dict):
+        @classmethod
+        def from_dict(cls, value):
+            return cls(value)
+    client = object()
+    rebuilt = []
+    class LegacyResolver:
+        def __init__(self, registry, jev_client=None):
+            self.jev_client = jev_client
+            rebuilt.append((registry, jev_client))
+        async def resolve(self, *args, **kwargs):
+            assert self.jev_client is client
+            return {'model': 'large', 'provider': 'provider'}
+    current = Snapshot(copy.deepcopy(CONFIG))
+    saved = copy.deepcopy(CONFIG)
+    saved['saved_revision'] = 'old'
+    ledger = Ledger(tmp_path / 'db')
+    host = Host()
+    service = WebhookService(current, LegacyResolver(current, client), DEPLOYMENT, ledger, host=host)
+    row, _ = ledger.reserve('scope', 'body', {'route_id': 'issue', 'registry_snapshot': saved,
+        'task': 'task', 'context': {}, 'target': 'api', 'principal': 'profile-a'})
+    await service.process(row)
+    assert rebuilt[-1] == (saved, client)
+    assert len(host.calls) == 1

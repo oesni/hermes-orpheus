@@ -19,7 +19,7 @@ uv run pytest -q
 uv build
 ```
 
-`validate` checks configuration structure and quarantined definitions, not provider connectivity. `inspect` expands inventory references into concrete provider/model/effort tuples. No LLM or Jev request is made by either command.
+`validate` checks configuration structure and quarantined definitions, not provider connectivity. `inspect` expands inventory references into concrete provider/model/effort tuples. No LLM or System One request is made by either command.
 
 ## Install in a Hermes environment
 
@@ -67,7 +67,7 @@ The [preset example](examples/presets.yaml) uses the original interface. The [de
 
 ## Subagents
 
-The tools are `orpheus_presets`, `orpheus_spawn`, `orpheus_status`, and `orpheus_cancel`. The existing parent may propose a preset and dynamic values only when its administrator-bound policy permits it. Rules/Jev policies reject parent overrides.
+The tools are `orpheus_presets`, `orpheus_spawn`, `orpheus_status`, and `orpheus_cancel`. The existing parent may propose a preset and dynamic values only when its administrator-bound policy permits it. Rules/System One policies reject parent overrides.
 
 For the included preset, the parent can request:
 
@@ -81,7 +81,7 @@ The selected model reference `large` resolves to the preset's matching model tup
 
 ## Webhooks
 
-Enable the Hermes API-server platform and register the plugin. Orpheus mounts `/orpheus/webhooks/{route_id}` and operator status/cancel/reconcile endpoints on that application. This does not modify native `/webhooks/...` routes. Use rules or Jev for every preset/model/effort choice before calling authenticated `POST /v1/runs` to create a fresh session.
+Enable the Hermes API-server platform and register the plugin. Orpheus mounts `/orpheus/webhooks/{route_id}` and operator status/cancel/reconcile endpoints on that application. This does not modify native `/webhooks/...` routes. Use rules or System One for every preset/model/effort choice before calling authenticated `POST /v1/runs` to create a fresh session.
 
 Ingress supports SHA-256 HMAC over raw JSON body bytes, replay detection through durable body digests independent of unsigned delivery headers, typed body extraction and preselection filters. Receipts must be explicitly disabled in this initial implementation. Authentication, API target and operator credentials are separate; operator calls need a Bearer credential scoped to the route's stable security scope. Start from [webhook presets](examples/webhook-presets.yaml) and [webhook deployment](examples/webhook-deployment.yaml). See the implementation notes for supported configuration and limitations.
 
@@ -110,6 +110,12 @@ Model identifiers such as `typesafe/jev-1.14` are unchanged.
 Python integrations use `orpheus.systemone.SystemOneClient`, `systemone_client`,
 `DEFAULT_SYSTEMONE_ENDPOINT`, and `validate_systemone_endpoint`; the old Python names
 remain compatibility aliases.
+
+Diagnostic codes intentionally use the new protocol name, including for legacy input:
+`invalid_jev_endpoint` → `invalid_systemone_endpoint`,
+`jev_endpoint_requires_token_env` → `systemone_endpoint_requires_token_env`, and
+`invalid_jev_token_env` → `invalid_systemone_token_env`. Integrations matching these
+codes must update their checks; the old diagnostic strings are not aliases.
 
 The System One client uses `TYPESAFE_API_KEY` and `https://api.typesafe.ai/v1/systemone` by default. Configure the full endpoint and credential environment variable in the operator deployment file. For OpenRouter System One:
 

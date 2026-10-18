@@ -81,10 +81,26 @@ class SystemOneTests(unittest.IsolatedAsyncioTestCase):
 
     def test_choice_limit_for_both_spellings(self):
         for kind in ('systemone', 'jev'):
-            config = sample()
-            config['presets'] = [dict(copy.deepcopy(config['presets'][0]), id=f'p{i}') for i in range(256)]
-            config['policies']['interactive']['preset_selector'] = choice(kind, 'p')
-            self.assertIn('interactive', Registry.from_dict(config).unavailable_policies)
+            for count in (255, 256):
+                config = sample()
+                config['presets'] = [dict(copy.deepcopy(config['presets'][0]), id=f'p{i}') for i in range(count)]
+                config['policies']['interactive']['preset_selector'] = choice(kind, 'p')
+                registry = Registry.from_dict(config)
+                if count == 255:
+                    self.assertIn('interactive', registry.policies)
+                else:
+                    self.assertEqual(registry.unavailable_policies['interactive'],
+                                     'System One supports at most 255 choices')
+
+    def test_canonical_example(self):
+        from pathlib import Path
+        from orpheus.deployment import validate_routes
+        import yaml
+        root = Path(__file__).resolve().parents[1]
+        registry = Registry.from_yaml((root / 'examples/systemone-presets.yaml').read_text())
+        validate_routes(registry, yaml.safe_load((root / 'examples/deployment.yaml').read_text()))
+        self.assertFalse(registry.unavailable_policies)
+        self.assertFalse(registry.quarantined)
 
 
 class SystemOneDeploymentTests(unittest.TestCase):
