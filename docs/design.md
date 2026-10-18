@@ -130,7 +130,13 @@ Lower numeric priority wins. Priorities must be unique within a ruleset; configu
 
 Authenticated origin does not make arbitrary content authoritative. For example, `event.labels` may be permitted as routing data while carrying no authorization power. Principal/route allowlists are derived from verified ingress data and cannot be replaced by task text. Rule selection never grants tools or credentials.
 
-### Jev
+### System One resolver
+
+Use `kind: systemone` in preset selectors, field resolvers, and referenced resolver nodes.
+The deprecated `kind: jev` alias is accepted and normalized in compiled policies.
+Source snapshots and revision hashes retain the operator-supplied spelling.
+The deployment keys `jev_endpoint` and `jev_token_env` and the configured model ID
+remain unchanged; this name identifies the Choice API protocol rather than a model.
 
 Jev uses TypeSafe's documented System One Choice API. Preset routing chooses a finite entrypoint-compatible preset ID; field resolution chooses a finite complete tuple ID. The tuple approach prevents independent model/effort questions from producing incompatible combinations. Opaque candidate IDs map back to the pinned registry, never to arbitrary response strings.
 

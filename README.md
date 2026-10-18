@@ -85,6 +85,26 @@ Enable the Hermes API-server platform and register the plugin. Orpheus mounts `/
 
 Ingress supports SHA-256 HMAC over raw JSON body bytes, replay detection through durable body digests independent of unsigned delivery headers, typed body extraction and preselection filters. Receipts must be explicitly disabled in this initial implementation. Authentication, API target and operator credentials are separate; operator calls need a Bearer credential scoped to the route's stable security scope. Start from [webhook presets](examples/webhook-presets.yaml) and [webhook deployment](examples/webhook-deployment.yaml). See the implementation notes for supported configuration and limitations.
 
+Use `kind: systemone` for System One Choice API routing in `preset_selector`,
+`field_resolver`, and referenced `resolver_nodes`. The `model` remains an endpoint-supported
+model identifier; the resolver kind names the protocol, not a particular model.
+The complete [System One example](examples/systemone-presets.yaml) lets the parent
+choose a preset and System One choose its model tuple:
+
+```yaml
+field_resolver:
+  id: fields
+  kind: systemone
+  model: typesafe/jev-1.14
+  projection_fields: [task.text]
+```
+
+The deprecated `kind: jev` spelling remains a compatibility alias. Both spellings
+use the same validation, projections, finite choices, retries, and fallback rules.
+Compiled policies normalize the alias to `systemone`; source snapshots and revision
+hashes retain the original configuration. Existing `jev_endpoint` and `jev_token_env`
+deployment keys are unchanged, as are model identifiers such as `typesafe/jev-1.14`.
+
 Jev uses `TYPESAFE_API_KEY` and `https://api.typesafe.ai/v1/systemone` by default. Configure the full endpoint and credential environment variable in the operator deployment file. For OpenRouter System One:
 
 ```yaml

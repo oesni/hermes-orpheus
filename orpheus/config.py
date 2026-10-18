@@ -154,7 +154,13 @@ class Registry:
         for name, policy in config['policies'].items():
             try:
                 self._policy(policy)
-                self.policies[name] = dict(policy, revision=digest(policy))
+                compiled = copy.deepcopy(policy)
+                # Keep source/revision tied to the operator's exact configuration.
+                for node in [compiled['preset_selector'], compiled['field_resolver'],
+                             *compiled.get('resolver_nodes', {}).values()]:
+                    if node['kind'] == 'jev':
+                        node['kind'] = 'systemone'
+                self.policies[name] = dict(compiled, revision=digest(policy))
             except (ConfigError, TypeError, ValueError, KeyError) as exc:
                 self.unavailable_policies[name] = str(exc)
         self.subagent_policy = config.get('subagent_policy')
@@ -236,18 +242,18 @@ class Registry:
         field_results=set()
         def visit(node, stage, stack):
             keys(node, {'id','kind','on_error','preset','settings','rules','no_match','model','projection_fields','required_fields','timeout','min_confidence','retries'}, {'id','kind'})
-            kind=node['kind']
-            if not isinstance(kind,str) or kind not in ('parent','fixed','rules','jev'): raise ConfigError('Invalid resolver kind')
+            kind='systemone' if node['kind']=='jev' else node['kind']
+            if not isinstance(kind,str) or kind not in ('parent','fixed','rules','systemone'): raise ConfigError('Invalid resolver kind')
             result_key='preset' if stage=='preset' else 'settings'
-            extra={'parent':set(),'fixed':{result_key},'rules':{'rules','no_match'},'jev':{'model','projection_fields','required_fields','timeout','min_confidence','retries'}}[kind]
-            required={'fixed':{result_key},'rules':{'rules'},'jev':{'model','projection_fields'},'parent':set()}[kind]
+            extra={'parent':set(),'fixed':{result_key},'rules':{'rules','no_match'},'systemone':{'model','projection_fields','required_fields','timeout','min_confidence','retries'}}[kind]
+            required={'fixed':{result_key},'rules':{'rules'},'systemone':{'model','projection_fields'},'parent':set()}[kind]
             keys(node, {'id','kind','on_error'}|extra, {'id','kind'}|required)
             if not isinstance(node.get('on_error',[]),list): raise ConfigError('Fallback edges must be a list')
             nid=node['id']
             if nid in stack: raise ConfigError('Resolver cycle')
             if not isinstance(nid,str): raise ConfigError('Invalid node ID')
-            kind=node['kind']
-            if kind not in ('parent','fixed','rules','jev'): raise ConfigError('Invalid resolver kind')
+            kind='systemone' if node['kind']=='jev' else node['kind']
+            if kind not in ('parent','fixed','rules','systemone'): raise ConfigError('Invalid resolver kind')
             if kind=='parent' and policy['entrypoint']!='subagent': raise ConfigError('Webhook forbids parent selection')
             def output(n):
                 key='preset' if stage=='preset' else 'settings'
@@ -255,17 +261,17 @@ class Registry:
                 (reachable if stage=='preset' else field_results).add(n[key])
             if kind=='fixed': output(node)
             if kind=='parent' and stage=='preset': reachable.update(self.presets)
-            if kind=='jev':
-                if not isinstance(node.get('model'),str) or not node['model']: raise ConfigError('Jev model required')
+            if kind=='systemone':
+                if not isinstance(node.get('model'),str) or not node['model']: raise ConfigError('System One model required')
                 projection=node.get('projection_fields',[])
                 string_list(projection,'projection fields')
                 string_list(node.get('required_fields',[]),'required fields')
-                if any(x not in schema for x in projection): raise ConfigError('Invalid Jev projection')
-                if any(x not in projection for x in node.get('required_fields',[])): raise ConfigError('Required Jev field excluded')
+                if any(x not in schema for x in projection): raise ConfigError('Invalid System One projection')
+                if any(x not in projection for x in node.get('required_fields',[])): raise ConfigError('Required System One field excluded')
                 if stage=='preset': reachable.update(self.presets)
                 for key,default,low,high in [('timeout',10,0.01,30),('retries',0,0,3),('min_confidence',0,0,1)]:
                     v=node.get(key,default)
-                    if type(v) not in (int,float) or not low<=v<=high or (key=='retries' and type(v) is not int): raise ConfigError('Invalid Jev bound')
+                    if type(v) not in (int,float) or not low<=v<=high or (key=='retries' and type(v) is not int): raise ConfigError('Invalid System One bound')
             if kind=='rules':
                 rules=node.get('rules',[])
                 if not isinstance(rules,list) or len(rules)>256: raise ConfigError('Rule count exceeded')
@@ -313,8 +319,8 @@ class Registry:
         if not reachable or reachable-set(self.presets): raise ConfigError('Unavailable preset reference')
         for preset in reachable:
             if field_results-set(self.presets[preset]['compatible_settings']): raise ConfigError('Tuple reference invalid across reachable presets')
-        if any(n['kind']=='jev' for n in all_nodes):
-            if len(reachable)>255 or any(len(self.presets[p]['compatible_settings'])>255 for p in reachable): raise ConfigError('Jev supports at most 255 choices')
+        if any(n['kind'] in ('systemone','jev') for n in all_nodes):
+            if len(reachable)>255 or any(len(self.presets[p]['compatible_settings'])>255 for p in reachable): raise ConfigError('System One supports at most 255 choices')
 
     @staticmethod
     def _predicate(pred,schema,depth=0):

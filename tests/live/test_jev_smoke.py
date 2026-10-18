@@ -32,7 +32,7 @@ class JevSmokeTests(unittest.TestCase):
         self.assertEqual(set(registry.presets), {'reviewer', 'writer'})
         policy = registry.policies['jev-smoke']
         for stage in ('preset_selector', 'field_resolver'):
-            self.assertEqual(policy[stage]['kind'], 'jev')
+            self.assertEqual(policy[stage]['kind'], 'systemone')
         for _, task, _, _ in CASES:
             self.assertNotIn('choose', task.lower())
             self.assertNotIn('effort', task.lower())

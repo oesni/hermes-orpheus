@@ -113,10 +113,10 @@ class Resolver:
                             attempts.append({'node':node['id'],'cause':'no_match','target':no['target']})
                             return await run(policy['resolver_nodes'][no['target']],stage)
                         else: raise SelectionError('No rule matched','no_match')
-                elif kind=='jev':
-                    if self.jev_client is None: raise SelectionError('Jev credentials unavailable','missing_credentials')
+                elif kind=='systemone':
+                    if self.jev_client is None: raise SelectionError('System One credentials unavailable','missing_credentials')
                     allowed=set(node.get('projection_fields',[])) & projection_scope
-                    if set(node.get('required_fields',[]))-allowed or any(f not in values for f in node.get('required_fields',[])): raise SelectionError('Required Jev projection excluded')
+                    if set(node.get('required_fields',[]))-allowed or any(f not in values for f in node.get('required_fields',[])): raise SelectionError('Required System One projection excluded')
                     state={k:values[k] for k in sorted(allowed) if k in values}
                     choices={}
                     for candidate_id,candidate in sorted(candidates.items()):
@@ -140,13 +140,13 @@ class Resolver:
                                 if confidence<node['min_confidence']: raise SelectionError('Low confidence','low_confidence')
                             break
                         except asyncio.TimeoutError as exc:
-                            if attempt==node.get('retries',0): raise SelectionError('Jev timed out','timeout') from exc
+                            if attempt==node.get('retries',0): raise SelectionError('System One timed out','timeout') from exc
                         except SelectionError as exc:
                             if exc.code not in ('timeout','rate_limited','service_unavailable') or attempt==node.get('retries',0): raise
                         timeout=min(node.get('timeout',10),deadline-time.monotonic())
                         if timeout<=0: raise SelectionError('Selection deadline exceeded','timeout')
                 else: raise SelectionError('Unsupported resolver')
-                if not isinstance(result,str) or result not in candidates: raise SelectionError('Choice outside pending candidates','invalid_response' if kind=='jev' else 'invalid_selection')
+                if not isinstance(result,str) or result not in candidates: raise SelectionError('Choice outside pending candidates','invalid_response' if kind=='systemone' else 'invalid_selection')
                 attempts.append({'node':node['id'],'result':result})
                 return result
             except SelectionError as exc:
