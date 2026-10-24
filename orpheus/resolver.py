@@ -5,6 +5,7 @@ import json
 import time
 import uuid
 from .config import ConfigError, digest, typed
+from .session import SESSION_FIELDS
 
 
 class SelectionError(ValueError):
@@ -42,7 +43,9 @@ class Resolver:
     def jev_client(self, client):
         self.systemone_client = client
 
-    async def resolve(self, entrypoint, task, context=None, preset_id=None, proposals=None, route_id=None):
+    async def resolve(self, entrypoint, task, context=None, preset_id=None, proposals=None, route_id=None, session=None):
+        """``session`` holds host-observed ``session.*`` values (never caller input); only the
+        names a subagent policy declares are used, and an absent or invalid value is omitted."""
         registry=copy.deepcopy(self.registry)
         if not registry.admissions_enabled: raise SelectionError('Registry source stale','stale_preset')
         if entrypoint not in ('subagent','webhook'): raise SelectionError('Invalid entrypoint')
@@ -68,6 +71,11 @@ class Resolver:
             for key,value in context.items():
                 if not isinstance(key,str) or '.' in key: raise SelectionError('Nested context forbidden','invalid_input')
                 values['context.'+key]=value
+            for name,value in (session or {}).items():
+                if name not in SESSION_FIELDS or name not in schema: continue
+                try: typed(value,schema[name])
+                except ConfigError: continue
+                values[name]=value
         else:
             schema=route['event_schema']
             values=dict(context)
@@ -173,4 +181,4 @@ class Resolver:
         resolved.update(selected['compatible_settings'][tuple_id])
         model_ref=resolved['model']; model=registry.inventory[model_ref]
         resolved.update(model=model['model'],provider=model['provider'])
-        return copy.deepcopy(dict(request_id=str(uuid.uuid4()),entrypoint=entrypoint,policy_id=policy_id,policy_revision=policy['revision'],registry_revision=registry.revision,preset_id=chosen,preset_revision=selected['revision'],tuple_id=tuple_id,model_ref=model_ref,candidate_set_hash=digest(selected['compatible_settings']),requested={'preset_id':preset_id,'proposals':proposals},resolved=resolved,attempts=attempts,created_at=time.time(),**resolved))
+        return copy.deepcopy(dict(request_id=str(uuid.uuid4()),entrypoint=entrypoint,policy_id=policy_id,policy_revision=policy['revision'],registry_revision=registry.revision,preset_id=chosen,preset_revision=selected['revision'],tuple_id=tuple_id,model_ref=model_ref,candidate_set_hash=digest(selected['compatible_settings']),requested={'preset_id':preset_id,'proposals':proposals},session_inputs={k:v for k,v in values.items() if k in SESSION_FIELDS},resolved=resolved,attempts=attempts,created_at=time.time(),**resolved))

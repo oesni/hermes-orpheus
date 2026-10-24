@@ -6,6 +6,7 @@ import json
 from collections import Counter
 from typing import Any
 import yaml
+from .session import SESSION_FIELDS
 
 
 class ConfigError(ValueError):
@@ -32,6 +33,7 @@ def input_schema(schema, webhook=False):
     if not isinstance(schema, dict): raise ConfigError('Input schema must be a mapping')
     for name, spec in schema.items():
         if not isinstance(name, str) or not name: raise ConfigError('Invalid input path')
+        if webhook and name in SESSION_FIELDS: raise ConfigError('Session fields are subagent-only')
         keys(spec, {'type','max_length','max_items','required','trust','values','source','pointer','header'} if webhook else {'type','max_length','max_items','required','trust','values'}, {'type'})
         kind=spec['type']
         if not isinstance(kind,str) or kind not in ('string','string_list','number','boolean','enum'): raise ConfigError('Invalid input type')
@@ -51,6 +53,12 @@ def input_schema(schema, webhook=False):
             if not isinstance(spec.get(key),str): raise ConfigError('Missing extraction location')
             if key=='pointer' and spec[key] and not spec[key].startswith('/'): raise ConfigError('Invalid JSON pointer')
             if key=='header' and not spec[key]: raise ConfigError('Invalid header name')
+        elif name in SESSION_FIELDS:
+            # Host-observed calling-session metadata: never caller supplied, so it must be
+            # declared as verified metadata and stays optional (it is unknown before the first
+            # model response of a session).
+            if spec.get('trust')!='verified_metadata' or kind!='string' or spec.get('required',False):
+                raise ConfigError('Session fields must be optional verified_metadata strings')
         elif (name!='task.text' and (not name.startswith('context.') or name.count('.')!=1)) or spec.get('trust','payload')!='payload':
             raise ConfigError('Invalid subagent input path or trust')
 

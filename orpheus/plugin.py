@@ -10,6 +10,7 @@ from .host import SubagentAdapter, HostError
 from .deployment import systemone_settings, validate_routes
 from .systemone import SystemOneClient
 from .resolver import Resolver
+from .session import SessionModels, describe, selection_inputs
 
 
 EMPTY_CONFIG = {'schema_version': 1, 'inventory': {'models': {}}, 'presets': [], 'policies': {}}
@@ -34,12 +35,19 @@ def register(ctx):
     adapter = SubagentAdapter(ctx.subagent_lifecycle, state_dir, deployment.get('subagent', {}), redact_literals=deployment.get('redact_literals', []))
     if callable(getattr(ctx, 'on_unload', None)):
         ctx.on_unload(adapter.close)
+    sessions = SessionModels()
+    if callable(getattr(ctx, 'register_hook', None)):
+        ctx.register_hook('post_api_request', sessions.observe)
+
+    def calling_session(kwargs):
+        return describe(sessions.get(kwargs.get('session_id')), registry.inventory)
 
     async def presets(args, **kwargs):
         if args:
             raise HostError('invalid_input', 'Discovery takes no parameters.')
         data = registry.discover('subagent')
         data['host_capabilities'] = adapter.capabilities()
+        data['session'] = calling_session(kwargs)
         for preset in data['presets']:
             reasons = []
             for candidate in preset['compatible_settings'].values():
@@ -61,7 +69,8 @@ def register(ctx):
         if not isinstance(args, dict) or set(args) - {'task', 'context', 'preset_id', 'proposals'}:
             raise HostError('invalid_input', 'Unknown spawn parameters.')
         selection = await resolver.resolve('subagent', args.get('task'), context=args.get('context'),
-                                           preset_id=args.get('preset_id'), proposals=args.get('proposals'))
+                                           preset_id=args.get('preset_id'), proposals=args.get('proposals'),
+                                           session=selection_inputs(calling_session(kwargs)))
         # Deliver pending task cancellation before crossing the irreversible launch boundary.
         await asyncio.sleep(0)
         return adapter.launch(selection, args['task'], args.get('context'))

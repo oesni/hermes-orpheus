@@ -130,6 +130,37 @@ string as `context`, nested objects, or undeclared keys. Instructions such as
 “read only” are behavioral guidance, not a permission sandbox. Omitted toolsets
 inherit host behavior; an empty preset list is not a supported way to disable tools.
 
+### Calling-session model
+
+Orpheus observes the model and provider of each successful provider response
+through the `post_api_request` lifecycle hook and keeps the latest observation per
+session ID. `orpheus_presets` reports it for the calling session as `session`:
+`provider`, `model`, `model_ref` (the inventory reference naming that exact pair,
+or `null` when none or several match), `matching_refs` and `observed_at`. It is
+`null` until the session has completed a model response that Orpheus observed,
+for example right after the plugin is enabled.
+
+A native policy may also declare these host-observed values as selection inputs:
+
+```yaml
+input_schema:
+  task.text: {type: string, max_length: 16000, required: true, trust: payload}
+  session.model_ref: {type: string, max_length: 64, trust: verified_metadata}
+```
+
+Allowed names are `session.model`, `session.provider` and `session.model_ref`.
+They must be optional `string` fields with `trust: verified_metadata`, and they
+are native-only. Callers cannot supply them through `context`. Rules can match
+them (for example `{field: session.model_ref, op: eq, value: opus}`), and System One
+receives them only when they are listed in `projection_fields`. An unknown or
+out-of-bound value is omitted, so write rules with a `no_match` that is acceptable
+when the session model is unknown. Orpheus never excludes or changes a candidate on
+its own because of the session model. The selection result records the values it
+used under `session_inputs`.
+
+The observation is the model of the calling session's latest provider response, not
+proof of who authored a given artifact: a child or another tool may have written it.
+
 Native tasks are capped at **16000 characters**; set `task.text.max_length` no
 higher. Rendered native context is capped at **32000 characters**, including the
 `Preset instructions:` prefix and instructions, the `Explicit task context:`
