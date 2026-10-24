@@ -160,10 +160,11 @@ used under `session_inputs`.
 
 The observation is the model of the calling session's latest provider response, not
 proof of who authored a given artifact: a child or another tool may have written it.
-Observations live in memory only (cleared on restart). The latest delivery wins; if
-Hermes skips or abandons a hook callback (for example after
-`plugins.hook_callback_timeout`), the previous observation can remain until the next
-response.
+Observations live in memory only (cleared on restart). The latest delivery wins. If
+Hermes skips a hook callback, the previous observation remains until the next
+response. If a callback exceeds `plugins.hook_callback_timeout`, Hermes abandons it
+without waiting; when it later finishes, it can overwrite a newer observation with
+the older model until the next response is observed.
 
 Native tasks are capped at **16000 characters**; set `task.text.max_length` no
 higher. Rendered native context is capped at **32000 characters**, including the
