@@ -8,6 +8,7 @@ never changes a selection on its own.
 """
 from __future__ import annotations
 
+import math
 import threading
 import time
 from collections import OrderedDict
@@ -17,7 +18,10 @@ DEFAULT_LIMIT = 4096
 
 
 class SessionModels:
-    """Bounded, thread-safe latest model observation per Hermes session ID."""
+    """Bounded, thread-safe latest model observation per Hermes session ID.
+
+    When full, the session observed least recently is evicted; reads do not refresh recency.
+    """
 
     def __init__(self, limit=DEFAULT_LIMIT, clock=time.time):
         if type(limit) is not int or limit < 1:
@@ -27,12 +31,22 @@ class SessionModels:
         self._lock = threading.Lock()
         self._entries = OrderedDict()
 
-    def observe(self, session_id=None, model=None, provider=None, **_ignored):
-        """``post_api_request`` observer: record and return nothing (observers' results are ignored)."""
+    def observe(self, session_id=None, model=None, provider=None, ended_at=None, **_ignored):
+        """``post_api_request`` observer: record and return nothing (observers' results are ignored).
+
+        Hermes runs hook callbacks on worker threads, so two observations of one session can be
+        delivered out of order. Order them by the host-computed response time ``ended_at`` (set
+        before dispatch) and never let an older observation replace a newer one. A payload
+        without a usable ``ended_at`` falls back to the local clock.
+        """
         if not _text(session_id) or not _text(model) or not _text(provider):
             return None
-        entry = {'model': model, 'provider': provider, 'observed_at': self._clock()}
+        observed_at = ended_at if _finite(ended_at) else self._clock()
+        entry = {'model': model, 'provider': provider, 'observed_at': observed_at}
         with self._lock:
+            current = self._entries.get(session_id)
+            if current is not None and current['observed_at'] > observed_at:
+                return None
             self._entries[session_id] = entry
             self._entries.move_to_end(session_id)
             while len(self._entries) > self._limit:
@@ -69,3 +83,7 @@ def selection_inputs(described):
 
 def _text(value):
     return isinstance(value, str) and bool(value)
+
+
+def _finite(value):
+    return type(value) in (int, float) and math.isfinite(value)

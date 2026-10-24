@@ -37,6 +37,12 @@ def two_model_config():
                                    'no_match': {'kind': 'fixed', 'settings': 'opus'}}}}}
 
 
+def entry_of(models, session_id):
+    entry = models.get(session_id)
+    assert entry is not None, session_id
+    return entry
+
+
 class SessionModelsTests(unittest.TestCase):
     def test_latest_observation_per_session_and_incomplete_payloads_ignored(self):
         clock = iter(range(100)).__next__
@@ -52,7 +58,48 @@ class SessionModelsTests(unittest.TestCase):
         self.assertIsNone(models.get(None))
         self.assertIsNone(models.get(''))
 
-    def test_bounded_lru_and_returned_copies(self):
+    def test_out_of_order_delivery_never_regresses(self):
+        models = SessionModels(clock=lambda: 50.0)
+        models.observe(session_id='s', model='new', provider='p', ended_at=2.0)
+        models.observe(session_id='s', model='old', provider='p', ended_at=1.0)
+        self.assertEqual(models.get('s'), {'model': 'new', 'provider': 'p', 'observed_at': 2.0})
+        models.observe(session_id='s', model='newer', provider='p', ended_at=3)
+        self.assertEqual(entry_of(models, 's')['model'], 'newer')
+        # Unusable ended_at falls back to the local clock (50.0), which is newer here.
+        for bad in (None, float('nan'), float('inf'), '9', True):
+            with self.subTest(ended_at=bad):
+                models.observe(session_id=f'b{bad!r}', model='m', provider='p', ended_at=bad)
+                self.assertEqual(entry_of(models, f'b{bad!r}')['observed_at'], 50.0)
+
+    def test_concurrent_delivery_with_older_observation_blocked_late(self):
+        """Reviewer scenario: an older worker pauses after timing, a newer one records first."""
+        models = SessionModels()
+        older_timed, newer_done = threading.Event(), threading.Event()
+        def older():
+            older_timed.set(); newer_done.wait(5)
+            models.observe(session_id='s', model='old', provider='p', ended_at=1.0)
+        def newer():
+            older_timed.wait(5)
+            models.observe(session_id='s', model='new', provider='p', ended_at=2.0); newer_done.set()
+        threads = [threading.Thread(target=older), threading.Thread(target=newer)]
+        for t in threads: t.start()
+        for t in threads: t.join(5)
+        self.assertEqual(entry_of(models, 's')['model'], 'new')
+
+    def test_eviction_is_by_observation_recency_not_reads(self):
+        models = SessionModels(limit=2)
+        models.observe(session_id='a', model='m', provider='p')
+        models.observe(session_id='b', model='m', provider='p')
+        models.get('a')
+        models.observe(session_id='c', model='m', provider='p')
+        self.assertIsNone(models.get('a'))
+        self.assertIsNotNone(models.get('b'))
+        models.observe(session_id='b', model='m2', provider='p')
+        models.observe(session_id='d', model='m', provider='p')
+        self.assertIsNone(models.get('c'))
+        self.assertEqual(entry_of(models, 'b')['model'], 'm2')
+
+    def test_bounded_and_returned_copies(self):
         models = SessionModels(limit=2)
         for sid in ('a', 'b', 'c'):
             models.observe(session_id=sid, model='m', provider='p')
