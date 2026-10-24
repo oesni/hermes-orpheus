@@ -58,33 +58,14 @@ class SessionModelsTests(unittest.TestCase):
         self.assertIsNone(models.get(None))
         self.assertIsNone(models.get(''))
 
-    def test_out_of_order_delivery_never_regresses(self):
-        models = SessionModels(clock=lambda: 50.0)
-        models.observe(session_id='s', model='new', provider='p', ended_at=2.0)
-        models.observe(session_id='s', model='old', provider='p', ended_at=1.0)
-        self.assertEqual(models.get('s'), {'model': 'new', 'provider': 'p', 'observed_at': 2.0})
-        models.observe(session_id='s', model='newer', provider='p', ended_at=3)
-        self.assertEqual(entry_of(models, 's')['model'], 'newer')
-        # Unusable ended_at falls back to the local clock (50.0), which is newer here.
-        for bad in (None, float('nan'), float('inf'), '9', True):
-            with self.subTest(ended_at=bad):
-                models.observe(session_id=f'b{bad!r}', model='m', provider='p', ended_at=bad)
-                self.assertEqual(entry_of(models, f'b{bad!r}')['observed_at'], 50.0)
-
-    def test_concurrent_delivery_with_older_observation_blocked_late(self):
-        """Reviewer scenario: an older worker pauses after timing, a newer one records first."""
-        models = SessionModels()
-        older_timed, newer_done = threading.Event(), threading.Event()
-        def older():
-            older_timed.set(); newer_done.wait(5)
-            models.observe(session_id='s', model='old', provider='p', ended_at=1.0)
-        def newer():
-            older_timed.wait(5)
-            models.observe(session_id='s', model='new', provider='p', ended_at=2.0); newer_done.set()
-        threads = [threading.Thread(target=older), threading.Thread(target=newer)]
-        for t in threads: t.start()
-        for t in threads: t.join(5)
-        self.assertEqual(entry_of(models, 's')['model'], 'new')
+    def test_latest_delivery_wins_and_payload_timestamps_are_ignored(self):
+        """Wall-clock payload fields can repeat or move backwards, so they never order deliveries."""
+        models = SessionModels(clock=iter([10.0, 11.0, 12.0]).__next__)
+        models.observe(session_id='s', model='first', provider='p', ended_at=105.0, started_at=100.0)
+        models.observe(session_id='s', model='second', provider='p', ended_at=100.0)
+        self.assertEqual(entry_of(models, 's'), {'model': 'second', 'provider': 'p', 'observed_at': 11.0})
+        models.observe(session_id='s', model='third', provider='p', ended_at=100.0)
+        self.assertEqual(entry_of(models, 's')['model'], 'third')
 
     def test_eviction_is_by_observation_recency_not_reads(self):
         models = SessionModels(limit=2)

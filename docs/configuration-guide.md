@@ -160,6 +160,10 @@ used under `session_inputs`.
 
 The observation is the model of the calling session's latest provider response, not
 proof of who authored a given artifact: a child or another tool may have written it.
+Observations live in memory only (cleared on restart). The latest delivery wins; if
+Hermes skips or abandons a hook callback (for example after
+`plugins.hook_callback_timeout`), the previous observation can remain until the next
+response.
 
 Native tasks are capped at **16000 characters**; set `task.text.max_length` no
 higher. Rendered native context is capped at **32000 characters**, including the
