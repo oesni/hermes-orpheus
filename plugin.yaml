@@ -8,6 +8,8 @@ provides_tools:
   - orpheus_spawn
   - orpheus_status
   - orpheus_cancel
+provides_hooks:
+  - post_api_request
 python_dependencies:
   - PyYAML>=6.0.2,<7
   - aiohttp>=3.11,<4

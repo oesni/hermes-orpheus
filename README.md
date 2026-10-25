@@ -14,6 +14,7 @@
 - **Controlled selection.** Let a parent agent choose, use deterministic rules, or route finite choices through the System One API, including Jev through OpenRouter.
 - **Two entrypoints.** Delegate work inside a conversation, or select a preset before creating a fresh webhook session.
 - **Trackable runs.** Discover presets, launch children, retrieve results, and request cancellation. Duplicate webhook bodies reuse their original request.
+- **Calling-session awareness.** Discovery reports the model of the calling session, and native policies can route on it. See [calling-session model](docs/configuration-guide.md#calling-session-model).
 
 | | Native subagent | Webhook session |
 | --- | --- | --- |
