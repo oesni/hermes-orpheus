@@ -28,7 +28,8 @@ Presets describe allowed choices; deployment settings authorize where they can r
 
 1. **Install** using the [Hermes directory-plugin instructions](docs/installation.md#install-the-plugin).
 2. **Configure** your models and presets with the [configuration authoring guide](docs/configuration-guide.md). You can give that guide to your agent to prepare the YAML for you.
-3. **Enable and verify** the plugin, then start a new Hermes session with the `orpheus` toolset available:
+3. **Turn off built-in delegation.** Add `delegation` to `agent.disabled_toolsets` and set `delegation.orchestrator_enabled: false`, so agents delegate through Orpheus instead of `delegate_task`. See [Turn off built-in delegation](docs/installation.md#turn-off-built-in-delegation).
+4. **Enable and verify** the plugin, then start a new Hermes session with the `orpheus` toolset available:
 
    ```sh
    hermes plugins enable hermes-orpheus
