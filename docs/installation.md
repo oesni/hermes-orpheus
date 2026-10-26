@@ -54,6 +54,26 @@ Run `hermes plugins doctor hermes-orpheus --ci` to check discovery and tool regi
 
 Ensure the `orpheus` toolset is enabled for the parent session. Preserve any existing platform toolsets; add Orpheus rather than replacing them. Child toolsets must also be available to the parent. Start a new session after enabling the plugin.
 
+### Turn off built-in delegation
+
+Turn off the Hermes `delegation` toolset, which provides the built-in `delegate_task` tool, in sessions that use Orpheus. While `delegate_task` is available, the agent can delegate through it instead of `orpheus_spawn`. That child gets no preset, policy, or deployment check. Its model comes from the Hermes delegation settings (`delegation.backend`, `delegation.model`, and `delegation.provider`), or from the parent when those are unset.
+
+Orpheus does not need the toolset. It launches children through the plugin lifecycle API, not through `delegate_task`. A session started without `delegation` launched and finished an Orpheus child.
+
+To turn it off on every platform, add `delegation` to `agent.disabled_toolsets` in the profile's configuration. Keep any entries already in the list. Also set `delegation.orchestrator_enabled` to `false`:
+
+```yaml
+agent:
+  disabled_toolsets:
+    - delegation
+delegation:
+  orchestrator_enabled: false
+```
+
+To turn it off on one platform only, remove `delegation` from that platform's toolsets with `hermes tools`, and still set `delegation.orchestrator_enabled` to `false`. Start a new session after either change.
+
+The orchestrator setting covers Orpheus children. Hermes picks a child's role from its depth and ignores the role in the launch request. If `orchestrator_enabled` is `true` and `delegation.max_spawn_depth` is 2 or more, an Orpheus child becomes an orchestrator. Hermes then gives it `delegate_task` again, even when the parent has `delegation` turned off. With `orchestrator_enabled: false`, every child is a leaf and has no `delegate_task`.
+
 Use the [configuration authoring guide](configuration-guide.md) to turn the examples into a usable configuration. It covers exact model authorization, compatible tuples, context declarations, and the first discovery/spawn/status check. Do not mark fallback disabled or a model verified simply to bypass preflight.
 
 ## Subagents
